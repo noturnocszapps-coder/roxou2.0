@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", sans-serif;
+  
+  --color-roxou-primary: #7c3aed;
+  --color-roxou-bg: #09090b;
+  --color-roxou-surface: #111827;
+  --color-roxou-surface-alt: #18181b;
+  --color-roxou-border: rgba(255, 255, 255, 0.08);
+  --color-roxou-text: #ffffff;
+  --color-roxou-text-muted: #9ca3af;
+}
+
+@layer base {
+  body {
+    @apply bg-roxou-bg text-roxou-text font-sans antialiased;
+  }
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur-lg border border-roxou-border;
+}
+
+.violet-glow {
+  box-shadow: 0 0 40px -10px rgba(124, 58, 237, 0.3);
+}
