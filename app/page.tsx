@@ -5,17 +5,17 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-roxou-bg text-white">
       {/* Header */}
-      <header className="fixed top-0 w-full z-50 glass py-4">
-        <div className="container mx-auto px-6 flex justify-between items-center">
+      <header className="fixed top-0 w-full z-50 glass py-3 sm:py-4">
+        <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-roxou-primary rounded-lg flex items-center justify-center">
-              <Zap className="text-white w-5 h-5 fill-current" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-roxou-primary rounded-lg flex items-center justify-center">
+              <Zap className="text-white w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
-            <span className="text-2xl font-display font-bold tracking-tighter">ROXOU</span>
+            <span className="text-xl sm:text-2xl font-display font-bold tracking-tighter">ROXOU</span>
           </div>
           <Link 
             href="/login" 
-            className="px-6 py-2 bg-roxou-primary hover:bg-roxou-primary/90 rounded-full text-sm font-semibold transition-all hover:scale-105"
+            className="px-5 sm:px-6 py-2 bg-roxou-primary hover:bg-roxou-primary/90 rounded-full text-xs sm:text-sm font-semibold transition-all hover:scale-105"
           >
             Entrar
           </Link>
@@ -131,14 +131,16 @@ export default function LandingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-32 container mx-auto px-6">
-          <div className="p-12 md:p-24 rounded-[60px] bg-gradient-to-br from-roxou-primary to-roxou-secondary text-center relative overflow-hidden">
+        <section className="py-16 sm:py-24 md:py-32 container mx-auto px-4 sm:px-6">
+          <div className="p-8 sm:p-12 md:p-24 rounded-[32px] sm:rounded-[48px] md:rounded-[60px] bg-gradient-to-br from-roxou-primary to-roxou-secondary text-center relative overflow-hidden violet-glow">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-            <div className="relative z-10">
-              <h2 className="text-4xl md:text-6xl font-display font-black mb-8 leading-tight">Pronto para o <br />próximo rolê?</h2>
+            <div className="relative z-10 flex flex-col items-center">
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-display font-black mb-6 sm:mb-10 leading-[1.1] tracking-tighter">
+                Pronto para o <br className="hidden sm:inline" />próximo rolê?
+              </h2>
               <Link 
                 href="/login/passenger" 
-                className="px-12 py-6 bg-white text-roxou-bg rounded-full font-black text-xl hover:scale-110 transition-all shadow-2xl"
+                className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-6 bg-white text-roxou-bg rounded-full font-black text-lg sm:text-xl hover:scale-105 sm:hover:scale-110 transition-all shadow-2xl active:scale-95"
               >
                 Pedir motorista agora
               </Link>

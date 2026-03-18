@@ -108,12 +108,15 @@ export default function NewRequestPage() {
             transition={{ delay: 0.7 }}
             className="pt-4"
           >
-            <Link 
-              href="/dashboard"
+            <button 
+              onClick={() => {
+                router.push("/dashboard");
+                router.refresh();
+              }}
               className="block w-full py-5 bg-roxou-surface border border-roxou-border text-white rounded-full font-bold text-lg hover:bg-roxou-primary hover:border-roxou-primary transition-all active:scale-95 shadow-xl"
             >
               Voltar para dashboard
-            </Link>
+            </button>
           </motion.div>
         </motion.div>
       </div>
