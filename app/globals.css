@@ -27,4 +27,12 @@
   .violet-glow {
     box-shadow: 0 0 40px -10px rgba(124, 58, 237, 0.3);
   }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

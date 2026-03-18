@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ArrowLeft, Zap, Info, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
+import RoxouDateTimePicker from "@/components/RoxouDateTimePicker";
 
 export default function NewRequestPage() {
   const supabase = createClient();
@@ -22,10 +23,31 @@ export default function NewRequestPage() {
     accepted_terms: false,
   });
 
+  const formatForDB = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const time = date.toLocaleTimeString("pt-BR", { 
+      hour: "2-digit", 
+      minute: "2-digit",
+      timeZone: "America/Sao_Paulo"
+    });
+    return date.toLocaleDateString("pt-BR", { 
+      day: "2-digit", 
+      month: "2-digit", 
+      year: "numeric",
+      timeZone: "America/Sao_Paulo"
+    }) + ` às ${time}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.accepted_terms) {
       setError("Você deve aceitar o aviso legal para continuar.");
+      return;
+    }
+
+    if (!formData.departure_time) {
+      setError("Por favor, selecione o horário de partida.");
       return;
     }
 
@@ -43,7 +65,7 @@ export default function NewRequestPage() {
       .insert({
         passenger_id: user.id,
         origin: formData.origin,
-        departure_time: formData.departure_time,
+        departure_time: formatForDB(formData.departure_time),
         notes: formData.notes,
         is_return: formData.is_return,
         status: "open",
@@ -155,17 +177,10 @@ export default function NewRequestPage() {
           </div>
 
           {/* Departure Time */}
-          <div className="space-y-3">
-            <label className="text-[10px] text-roxou-primary uppercase font-bold tracking-[0.2em] ml-1">Horário de Partida</label>
-            <input 
-              required
-              type="text"
-              placeholder="Ex: 23:45, Agora, Daqui 30min..."
-              className="w-full p-6 rounded-3xl bg-roxou-surface border border-roxou-border focus:border-roxou-primary outline-none transition-all placeholder:text-roxou-text-muted/30 text-lg"
-              value={formData.departure_time}
-              onChange={(e) => setFormData({ ...formData, departure_time: e.target.value })}
-            />
-          </div>
+          <RoxouDateTimePicker 
+            value={formData.departure_time}
+            onChange={(val) => setFormData({ ...formData, departure_time: val })}
+          />
 
           {/* Notes */}
           <div className="space-y-3">

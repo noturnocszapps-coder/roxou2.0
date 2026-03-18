@@ -3,8 +3,9 @@
 import { createClient } from "@/lib/supabase/client";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Send, Zap, ShieldAlert, Info } from "lucide-react";
+import { ArrowLeft, Send, Zap, ShieldAlert, Info, Loader2 } from "lucide-react";
 import Link from "next/link";
+import DriverStatusControls from "@/components/DriverStatusControls";
 
 export default function ChatPage() {
   const { connectionId } = useParams();
@@ -33,7 +34,7 @@ export default function ChatPage() {
           *,
           passenger:profiles!connections_passenger_id_fkey(id, full_name, avatar_url),
           driver:profiles!connections_driver_id_fkey(id, full_name, avatar_url),
-          request:transport_requests(origin, departure_time)
+          request:transport_requests(id, origin, departure_time, status)
         `)
         .eq("id", connectionId)
         .single();
@@ -149,11 +150,22 @@ export default function ChatPage() {
       </header>
 
       {/* Info Banner */}
-      <div className="bg-roxou-primary/10 border-b border-roxou-primary/20 p-3 px-6 flex items-center gap-3">
-        <Info className="w-4 h-4 text-roxou-primary flex-shrink-0" />
-        <p className="text-[10px] text-roxou-text-muted leading-tight">
-          Viagem para: <span className="text-white font-bold">{connection.request.origin}</span>. Combine o valor e local exato aqui.
-        </p>
+      <div className="bg-roxou-primary/10 border-b border-roxou-primary/20 p-4 px-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <Info className="w-4 h-4 text-roxou-primary flex-shrink-0" />
+          <p className="text-[10px] text-roxou-text-muted leading-tight">
+            Viagem para: <span className="text-white font-bold">{connection.request.origin}</span>. Combine o valor e local exato aqui.
+          </p>
+        </div>
+        
+        {currentUser.id === connection.driver_id && (
+          <div className="pt-2 border-t border-roxou-primary/10">
+            <DriverStatusControls 
+              requestId={connection.request_id} 
+              currentStatus={connection.request.status} 
+            />
+          </div>
+        )}
       </div>
 
       {/* Messages Area */}

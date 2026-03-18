@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
 import LiveIndicators from "@/components/LiveIndicators";
 import TimeAgo from "@/components/TimeAgo";
+import AcceptRequestButton from "@/components/AcceptRequestButton";
+import DriverStatusControls from "@/components/DriverStatusControls";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +40,7 @@ export default async function DriverDashboard() {
       *,
       passenger:profiles!transport_requests_passenger_id_fkey(full_name, avatar_url)
     `)
-    .eq("status", "open")
+    .in("status", ["open", "pending"])
     .order("created_at", { ascending: false });
 
   // Fetch active connections
@@ -47,7 +49,7 @@ export default async function DriverDashboard() {
     .select(`
       *,
       passenger:profiles!connections_passenger_id_fkey(full_name, avatar_url),
-      request:transport_requests(origin, departure_time)
+      request:transport_requests(id, origin, departure_time, status)
     `)
     .eq("driver_id", user.id)
     .eq("status", "active");
@@ -114,31 +116,51 @@ export default async function DriverDashboard() {
             </h3>
             <div className="space-y-4">
               {connections.map((conn: any) => (
-                <Link 
+                <div 
                   key={conn.id}
-                  href={`/chat/${conn.id}`}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-roxou-surface border border-roxou-border hover:border-roxou-primary/30 transition-all active:scale-[0.98] group"
+                  className="p-4 rounded-2xl bg-roxou-surface border border-roxou-border space-y-4"
                 >
-                  <div className="w-12 h-12 rounded-full bg-roxou-bg border border-roxou-border overflow-hidden relative">
-                    <img 
-                      src={conn.passenger.avatar_url || `https://ui-avatars.com/api/?name=${conn.passenger.full_name}`} 
-                      alt={conn.passenger.full_name} 
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-roxou-surface rounded-full" />
-                  </div>
-                  <div className="flex-grow">
-                    <h4 className="font-bold text-white">{conn.passenger.full_name}</h4>
-                    <p className="text-xs text-roxou-text-muted truncate max-w-[200px]">
-                      Para: {conn.request.origin}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-roxou-primary animate-pulse" />
-                    <ChevronRight className="w-5 h-5 text-roxou-text-muted group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
+                  <Link 
+                    href={`/chat/${conn.id}`}
+                    className="flex items-center gap-4 group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-roxou-bg border border-roxou-border overflow-hidden relative">
+                      <img 
+                        src={conn.passenger.avatar_url || `https://ui-avatars.com/api/?name=${conn.passenger.full_name}`} 
+                        alt={conn.passenger.full_name} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-roxou-surface rounded-full" />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-white">{conn.passenger.full_name}</h4>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                          conn.request.status === 'accepted' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
+                          conn.request.status === 'in_progress' ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' :
+                          'bg-roxou-text-muted/20 text-roxou-text-muted border border-roxou-text-muted/30'
+                        }`}>
+                          {conn.request.status === 'accepted' ? 'Aceito' : 
+                           conn.request.status === 'in_progress' ? 'Em Andamento' : 
+                           conn.request.status === 'completed' ? 'Finalizado' : conn.request.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-roxou-text-muted truncate max-w-[200px]">
+                        Para: {conn.request.origin}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-roxou-primary animate-pulse" />
+                      <ChevronRight className="w-5 h-5 text-roxou-text-muted group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                  
+                  <DriverStatusControls 
+                    requestId={conn.request_id} 
+                    currentStatus={conn.request.status} 
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -223,8 +245,8 @@ export default async function DriverDashboard() {
                     <div className="flex-1 p-3 rounded-xl bg-roxou-primary/5 border border-roxou-primary/10 flex items-center gap-3">
                       <Navigation className="w-4 h-4 text-roxou-primary" />
                       <div>
-                        <p className="text-[9px] text-roxou-text-muted uppercase font-bold">Distância</p>
-                        <p className="text-xs font-bold text-white">~4.2 km</p>
+                        <p className="text-[9px] text-roxou-text-muted uppercase font-bold">Retorno</p>
+                        <p className="text-xs font-bold text-white">{lead.is_return ? "Sim (Ida e Volta)" : "Apenas Ida"}</p>
                       </div>
                     </div>
                     <div className="flex-1 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex items-center gap-3">
@@ -244,12 +266,7 @@ export default async function DriverDashboard() {
                     </div>
                   )}
 
-                  <button 
-                    className="w-full py-5 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 group"
-                  >
-                    <Zap className="w-5 h-5 fill-current group-hover:animate-bounce" />
-                    Aceitar e Iniciar Chat
-                  </button>
+                  <AcceptRequestButton requestId={lead.id} driverId={user.id} />
                 </div>
               ))
             ) : (

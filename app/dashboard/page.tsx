@@ -6,6 +6,7 @@ import LogoutButton from "@/components/LogoutButton";
 import LiveIndicators from "@/components/LiveIndicators";
 import RealTimeNotification from "@/components/RealTimeNotification";
 import TimeAgo from "@/components/TimeAgo";
+import PassengerCancelButton from "@/components/PassengerCancelButton";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,10 @@ export default async function PassengerDashboard() {
   // Fetch transport requests
   const { data: requests } = await supabase
     .from("transport_requests")
-    .select("*")
+    .select(`
+      *,
+      driver:profiles!transport_requests_driver_id_fkey(full_name, avatar_url)
+    `)
     .eq("passenger_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -30,7 +34,7 @@ export default async function PassengerDashboard() {
     .select(`
       *,
       driver:profiles!connections_driver_id_fkey(full_name, avatar_url),
-      request:transport_requests(origin, departure_time)
+      request:transport_requests(origin, departure_time, status)
     `)
     .eq("passenger_id", user.id)
     .eq("status", "active");
@@ -120,7 +124,18 @@ export default async function PassengerDashboard() {
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-roxou-surface rounded-full" />
                   </div>
                   <div className="flex-grow">
-                    <h4 className="font-bold">{conn.driver.full_name}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold">{conn.driver.full_name}</h4>
+                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                        conn.request.status === 'accepted' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
+                        conn.request.status === 'in_progress' ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' :
+                        'bg-roxou-text-muted/20 text-roxou-text-muted border border-roxou-text-muted/30'
+                      }`}>
+                        {conn.request.status === 'accepted' ? 'Aceito' : 
+                         conn.request.status === 'in_progress' ? 'Em Andamento' : 
+                         conn.request.status === 'completed' ? 'Finalizado' : conn.request.status}
+                      </span>
+                    </div>
                     <p className="text-xs text-roxou-text-muted truncate max-w-[200px]">
                       Para: {conn.request.origin}
                     </p>
@@ -149,15 +164,50 @@ export default async function PassengerDashboard() {
                   className="p-5 rounded-2xl bg-roxou-surface border border-roxou-border hover:border-roxou-primary/20 transition-all"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-roxou-primary/10 border border-roxou-primary/20 text-roxou-primary text-[10px] font-bold uppercase tracking-wider">
-                      {req.status === 'open' ? 'Aberto' : req.status === 'filled' ? 'Finalizado' : 'Cancelado'}
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${
+                      req.status === 'open' ? 'bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary' : 
+                      req.status === 'accepted' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                      req.status === 'in_progress' ? 'bg-roxou-secondary/10 border-roxou-secondary/20 text-roxou-secondary' :
+                      req.status === 'completed' ? 'bg-roxou-text-muted/10 border-roxou-text-muted/20 text-roxou-text-muted' : 
+                      'bg-red-500/10 border-red-500/20 text-red-500'
+                    }`}>
+                      {req.status === 'open' ? 'Aberto' : 
+                       req.status === 'accepted' ? 'Aceito' :
+                       req.status === 'in_progress' ? 'Em Andamento' :
+                       req.status === 'completed' ? 'Finalizado' : 'Cancelado'}
                     </div>
                     <TimeAgo 
                       date={req.created_at} 
                       className="text-[10px] text-roxou-text-muted font-bold uppercase tracking-widest" 
                     />
                   </div>
-                  <div className="space-y-3">
+                  
+                  {(req.status === 'accepted' || req.status === 'in_progress' || req.status === 'completed') && req.driver && (
+                    <div className={`mb-4 p-3 rounded-xl border flex items-center gap-3 ${
+                      req.status === 'in_progress' ? 'bg-roxou-secondary/5 border-roxou-secondary/10' : 'bg-emerald-500/5 border-emerald-500/10'
+                    }`}>
+                      <div className="w-8 h-8 rounded-full bg-roxou-bg border border-roxou-border overflow-hidden">
+                        <img 
+                          src={req.driver.avatar_url || `https://ui-avatars.com/api/?name=${req.driver.full_name}`} 
+                          alt={req.driver.full_name} 
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div>
+                        <p className={`text-[10px] uppercase font-black tracking-widest ${
+                          req.status === 'in_progress' ? 'text-roxou-secondary' : 'text-emerald-500'
+                        }`}>
+                          {req.status === 'in_progress' ? 'Corrida em andamento' : 
+                           req.status === 'completed' ? 'Corrida finalizada' : 'Motorista a caminho'}
+                        </p>
+                        <p className="text-xs font-bold text-white">
+                          {req.status === 'completed' ? `Você viajou com ${req.driver.full_name}` : `${req.driver.full_name} ${req.status === 'in_progress' ? 'está levando você' : 'aceitou seu pedido!'}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-3 mb-4">
                     <div className="flex items-start gap-3">
                       <MapPin className="w-4 h-4 text-roxou-primary mt-1" />
                       <div>
@@ -173,6 +223,8 @@ export default async function PassengerDashboard() {
                       </div>
                     </div>
                   </div>
+
+                  <PassengerCancelButton requestId={req.id} currentStatus={req.status} />
                 </div>
               ))
             ) : (
