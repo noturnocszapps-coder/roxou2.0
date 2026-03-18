@@ -1,31 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatPublishedTime } from '@/lib/format-published-time';
 
 interface TimeAgoProps {
   date: string | Date;
-  prefix?: string;
+  prefix?: string; // Prefix is now handled within formatPublishedTime logic but kept for compatibility
   className?: string;
 }
 
 export default function TimeAgo({ date, prefix = 'Publicado há', className = '' }: TimeAgoProps) {
-  const [timeAgo, setTimeAgo] = useState('');
+  const [timeAgo, setTimeAgo] = useState('Publicado agora');
 
   useEffect(() => {
     const updateTime = () => {
-      const now = new Date();
-      const created = new Date(date);
-      const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
-
-      if (diffInSeconds < 60) {
-        setTimeAgo(`${diffInSeconds}s`);
-      } else if (diffInSeconds < 3600) {
-        setTimeAgo(`${Math.floor(diffInSeconds / 60)} min`);
-      } else if (diffInSeconds < 86400) {
-        setTimeAgo(`${Math.floor(diffInSeconds / 3600)}h`);
-      } else {
-        setTimeAgo(`${Math.floor(diffInSeconds / 86400)} dias`);
-      }
+      const formatted = formatPublishedTime(date.toString());
+      setTimeAgo(formatted);
     };
 
     updateTime();
@@ -36,7 +26,7 @@ export default function TimeAgo({ date, prefix = 'Publicado há', className = ''
 
   return (
     <span className={className}>
-      {prefix} {timeAgo}
+      {timeAgo}
     </span>
   );
 }
