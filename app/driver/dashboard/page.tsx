@@ -239,7 +239,7 @@ export default async function DriverDashboard() {
                   {lead.notes && (
                     <div className="mb-6 p-4 rounded-2xl bg-roxou-bg/30 border border-dashed border-roxou-border">
                       <p className="text-xs text-roxou-text-muted italic leading-relaxed">
-                        "{lead.notes}"
+                        &quot;{lead.notes}&quot;
                       </p>
                     </div>
                   )}

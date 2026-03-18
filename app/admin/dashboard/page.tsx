@@ -156,7 +156,7 @@ export default async function AdminDashboard() {
                         <span className="text-white font-bold">{report.reporter.full_name}</span> denunciou <span className="text-white font-bold">{report.reported.full_name}</span>
                       </p>
                       <div className="p-4 rounded-2xl bg-roxou-bg border border-roxou-border italic text-sm text-roxou-text-muted/80 group-hover:border-red-500/20 transition-all">
-                        "{report.details}"
+                        &quot;{report.details}&quot;
                       </div>
                     </div>
                     <button className="w-full py-4 rounded-2xl bg-red-500/10 text-red-500 text-xs font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95">
