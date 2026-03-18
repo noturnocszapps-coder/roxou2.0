@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Users, Zap, Activity } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface LiveIndicatorsProps {
   initialDrivers?: number;
