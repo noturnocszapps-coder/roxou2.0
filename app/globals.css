@@ -5,27 +5,40 @@
   --font-display: var(--font-montserrat), sans-serif;
   
   --color-roxou-primary: #7c3aed;
-  --color-roxou-bg: #09090b;
-  --color-roxou-surface: #111827;
-  --color-roxou-surface-alt: #18181b;
-  --color-roxou-border: rgba(255, 255, 255, 0.08);
+  --color-roxou-secondary: #4f46e5;
+  --color-roxou-bg: #0b0b0f;
+  --color-roxou-surface: #16161e;
+  --color-roxou-surface-alt: #1c1c26;
+  --color-roxou-border: rgba(255, 255, 255, 0.06);
   --color-roxou-text: #ffffff;
-  --color-roxou-text-muted: #9ca3af;
+  --color-roxou-text-muted: #94a3b8;
 }
 
 @layer base {
   body {
-    @apply bg-roxou-bg text-roxou-text font-sans antialiased;
+    @apply bg-roxou-bg text-roxou-text font-sans antialiased selection:bg-roxou-primary/30;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/5 backdrop-blur-lg border border-roxou-border;
+    @apply bg-roxou-bg/60 backdrop-blur-xl border-b border-roxou-border;
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-md border border-white/[0.05] shadow-2xl;
   }
 
   .violet-glow {
-    box-shadow: 0 0 40px -10px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 0 50px -12px rgba(124, 58, 237, 0.4);
+  }
+
+  .violet-glow-sm {
+    box-shadow: 0 0 20px -5px rgba(124, 58, 237, 0.3);
+  }
+
+  .neon-border {
+    @apply border-roxou-primary/30 focus-within:border-roxou-primary focus-within:ring-1 focus-within:ring-roxou-primary/50;
   }
 
   .scrollbar-hide::-webkit-scrollbar {
@@ -34,5 +47,36 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-gradient-slow {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
   }
 }

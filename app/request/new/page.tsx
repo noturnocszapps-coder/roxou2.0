@@ -3,7 +3,19 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Zap, Info, CheckCircle2 } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Zap, 
+  Info, 
+  CheckCircle2, 
+  MapPin, 
+  Calendar, 
+  Clock, 
+  Users, 
+  MessageSquare, 
+  ChevronRight, 
+  Sparkles 
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import RoxouDateTimePicker from "@/components/RoxouDateTimePicker";
@@ -156,24 +168,29 @@ export default function NewRequestPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 pt-8">
-        <div className="mb-10">
-          <h2 className="text-3xl font-display font-extrabold mb-2">Para onde é o rolê?</h2>
-          <p className="text-roxou-text-muted">Informe seu destino e horário para que os motoristas te encontrem.</p>
+      <main className="max-w-2xl mx-auto px-6 pt-10 pb-20">
+        <div className="mb-12">
+          <h2 className="text-4xl font-display font-black mb-3 tracking-tight">Para onde é o <span className="text-transparent bg-clip-text bg-gradient-to-r from-roxou-primary to-violet-400">rolê?</span></h2>
+          <p className="text-roxou-text-muted font-medium">Informe seu destino e horário para que os motoristas te encontrem na pista.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Origin */}
-          <div className="space-y-3">
-            <label className="text-[10px] text-roxou-primary uppercase font-bold tracking-[0.2em] ml-1">Destino Final</label>
-            <input 
-              required
-              type="text"
-              placeholder="Ex: Arena Club, Bar do Juarez, Casa do Amigo..."
-              className="w-full p-6 rounded-3xl bg-roxou-surface border border-roxou-border focus:border-roxou-primary outline-none transition-all placeholder:text-roxou-text-muted/30 text-lg"
-              value={formData.origin}
-              onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-            />
+          <div className="space-y-3 group">
+            <label className="text-[10px] text-roxou-primary uppercase font-black tracking-[0.25em] ml-1 opacity-80 group-focus-within:opacity-100 transition-opacity">Destino Final</label>
+            <div className="relative">
+              <input 
+                required
+                type="text"
+                placeholder="Ex: Arena Club, Bar do Juarez, Casa do Amigo..."
+                className="w-full p-6 rounded-[32px] bg-roxou-surface/50 border border-roxou-border focus:border-roxou-primary focus:ring-1 focus:ring-roxou-primary/50 outline-none transition-all placeholder:text-roxou-text-muted/20 text-lg font-medium shadow-inner"
+                value={formData.origin}
+                onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+              />
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-roxou-primary/10 flex items-center justify-center">
+                <MapPin className="w-4 h-4 text-roxou-primary/60" />
+              </div>
+            </div>
           </div>
 
           {/* Departure Time */}
@@ -183,62 +200,72 @@ export default function NewRequestPage() {
           />
 
           {/* Notes */}
-          <div className="space-y-3">
-            <label className="text-[10px] text-roxou-primary uppercase font-bold tracking-[0.2em] ml-1">Detalhes do Grupo (Opcional)</label>
+          <div className="space-y-3 group">
+            <label className="text-[10px] text-roxou-primary uppercase font-black tracking-[0.25em] ml-1 opacity-80 group-focus-within:opacity-100 transition-opacity">Detalhes do Grupo (Opcional)</label>
             <textarea 
               rows={3}
-              placeholder="Ex: Estamos em 3 pessoas, levo mochila, aguardo na portaria..."
-              className="w-full p-6 rounded-3xl bg-roxou-surface border border-roxou-border focus:border-roxou-primary outline-none transition-all placeholder:text-roxou-text-muted/30 resize-none text-base"
+              placeholder="Ex: Estamos em 3 pessoas, saindo da portaria, levo mochila..."
+              className="w-full p-6 rounded-[32px] bg-roxou-surface/50 border border-roxou-border focus:border-roxou-primary focus:ring-1 focus:ring-roxou-primary/50 outline-none transition-all placeholder:text-roxou-text-muted/20 resize-none text-base font-medium shadow-inner"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             />
           </div>
 
           {/* Return Trip */}
-          <div className="flex items-center gap-4 p-6 rounded-3xl bg-roxou-surface border border-roxou-border hover:border-roxou-primary/30 transition-all cursor-pointer group">
-            <input 
-              type="checkbox"
-              id="is_return"
-              className="w-7 h-7 rounded-xl bg-roxou-bg border border-roxou-border checked:bg-roxou-primary transition-all cursor-pointer"
-              checked={formData.is_return}
-              onChange={(e) => setFormData({ ...formData, is_return: e.target.checked })}
-            />
-            <label htmlFor="is_return" className="font-bold text-lg cursor-pointer flex-grow">Vou precisar de volta também</label>
+          <div 
+            onClick={() => setFormData({ ...formData, is_return: !formData.is_return })}
+            className={`flex items-center gap-4 p-6 rounded-[32px] border transition-all cursor-pointer group ${
+              formData.is_return 
+                ? 'bg-roxou-primary/10 border-roxou-primary shadow-[0_0_20px_rgba(124,58,237,0.1)]' 
+                : 'bg-roxou-surface/50 border-roxou-border hover:border-roxou-primary/30'
+            }`}
+          >
+            <div className={`w-7 h-7 rounded-xl border flex items-center justify-center transition-all ${
+              formData.is_return ? 'bg-roxou-primary border-roxou-primary' : 'bg-roxou-bg border-roxou-border'
+            }`}>
+              {formData.is_return && <CheckCircle2 className="w-4 h-4 text-white" />}
+            </div>
+            <label className="font-bold text-lg cursor-pointer flex-grow select-none">Vou precisar de volta também</label>
           </div>
 
-          {/* Legal Disclaimer - Ultra Compact */}
-          <div className="p-5 rounded-3xl bg-roxou-primary/5 border border-roxou-primary/10">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-8 h-8 rounded-full bg-roxou-primary/20 flex items-center justify-center flex-shrink-0">
-                <Info className="w-4 h-4 text-roxou-primary" />
+          {/* Legal Disclaimer */}
+          <div className="p-6 rounded-[32px] bg-roxou-surface/30 border border-roxou-border">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-10 h-10 rounded-2xl bg-roxou-primary/10 flex items-center justify-center flex-shrink-0">
+                <Info className="w-5 h-5 text-roxou-primary" />
               </div>
-              <p className="text-[10px] text-roxou-text-muted leading-tight">
-                O Roxou é uma plataforma de conexão. Negocie valores e detalhes diretamente com o motorista.
+              <p className="text-xs text-roxou-text-muted leading-relaxed">
+                O Roxou é uma plataforma de conexão. Negocie valores e detalhes diretamente com o motorista. Segurança em primeiro lugar.
               </p>
             </div>
-            <div className="flex items-center gap-3 pt-4 border-t border-roxou-primary/10">
-              <input 
-                required
-                type="checkbox"
-                id="accepted_terms"
-                className="w-5 h-5 rounded-lg bg-roxou-bg border border-roxou-border checked:bg-roxou-primary transition-all cursor-pointer"
-                checked={formData.accepted_terms}
-                onChange={(e) => setFormData({ ...formData, accepted_terms: e.target.checked })}
-              />
-              <label htmlFor="accepted_terms" className="text-xs font-bold uppercase tracking-wider cursor-pointer">Aceito os termos e avisos</label>
+            <div 
+              onClick={() => setFormData({ ...formData, accepted_terms: !formData.accepted_terms })}
+              className="flex items-center gap-3 pt-6 border-t border-roxou-border cursor-pointer group"
+            >
+              <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                formData.accepted_terms ? 'bg-roxou-primary border-roxou-primary' : 'bg-roxou-bg border-roxou-border'
+              }`}>
+                {formData.accepted_terms && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+              </div>
+              <label className="text-xs font-black uppercase tracking-[0.15em] cursor-pointer select-none opacity-80 group-hover:opacity-100">Aceito os termos e avisos</label>
             </div>
           </div>
 
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-sm font-bold flex items-center gap-3"
+            >
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               {error}
-            </div>
+            </motion.div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-5 bg-roxou-primary text-white rounded-full font-bold text-xl flex items-center justify-center gap-3 hover:bg-roxou-primary/90 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100 shadow-2xl shadow-roxou-primary/20"
+            className="w-full py-6 bg-gradient-to-r from-roxou-primary to-roxou-secondary text-white rounded-[32px] font-black text-xl flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 shadow-2xl shadow-roxou-primary/30 violet-glow"
           >
             <Zap className="w-6 h-6 fill-current" />
             {loading ? "Publicando..." : "Publicar Pedido"}

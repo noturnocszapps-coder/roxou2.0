@@ -178,14 +178,14 @@ export default function RoxouDateTimePicker({ value, onChange, label = "Horário
                 </div>
 
                 {/* Wheel Picker Simulation */}
-                <div className="bg-roxou-surface/50 rounded-3xl border border-roxou-border p-6 relative">
-                  <div className="flex justify-center items-center gap-4 h-48 overflow-hidden relative">
+                <div className="bg-roxou-surface/50 rounded-[32px] border border-roxou-border p-6 relative overflow-hidden">
+                  <div className="flex justify-center items-center gap-2 h-56 overflow-hidden relative">
                     {/* Selection Highlight */}
-                    <div className="absolute inset-x-0 h-12 border-y border-roxou-primary/30 bg-roxou-primary/5 pointer-events-none z-10" />
+                    <div className="absolute inset-x-4 h-14 border-y border-roxou-primary/40 bg-roxou-primary/10 pointer-events-none z-10 rounded-xl" />
                     
                     {/* Gradient Masks */}
-                    <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-roxou-surface/90 to-transparent pointer-events-none z-10" />
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-roxou-surface/90 to-transparent pointer-events-none z-10" />
+                    <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-roxou-bg to-transparent pointer-events-none z-10" />
+                    <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-roxou-bg to-transparent pointer-events-none z-10" />
                     
                     {/* Day */}
                     <PickerColumn 
@@ -207,7 +207,7 @@ export default function RoxouDateTimePicker({ value, onChange, label = "Horário
                       onChange={(v) => updateTempDate("year", v)}
                     />
                     
-                    <span className="text-2xl font-bold text-roxou-primary/50 mx-1">:</span>
+                    <span className="text-3xl font-black text-roxou-primary/40 mx-1 mb-1">:</span>
 
                     {/* Hour */}
                     <PickerColumn 

@@ -9,8 +9,8 @@ interface TimeAgoProps {
   className?: string;
 }
 
-export default function TimeAgo({ date, prefix = 'Publicado há', className = '' }: TimeAgoProps) {
-  const [timeAgo, setTimeAgo] = useState('Publicado agora');
+export default function TimeAgo({ date, prefix = '', className = '' }: TimeAgoProps) {
+  const [timeAgo, setTimeAgo] = useState('Agora');
 
   useEffect(() => {
     const updateTime = () => {
@@ -26,6 +26,7 @@ export default function TimeAgo({ date, prefix = 'Publicado há', className = ''
 
   return (
     <span className={className}>
+      {prefix && <span className="mr-1">{prefix}</span>}
       {timeAgo}
     </span>
   );

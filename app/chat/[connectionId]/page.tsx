@@ -63,7 +63,7 @@ export default function ChatPage() {
       setLoading(false);
 
       // Subscribe to new messages
-      const channel = supabase
+      const messageChannel = supabase
         .channel(`chat:${connectionId}`)
         .on(
           "postgres_changes",
@@ -79,8 +79,32 @@ export default function ChatPage() {
         )
         .subscribe();
 
+      // Subscribe to request status changes
+      const requestChannel = supabase
+        .channel(`request:${conn.request_id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "transport_requests",
+            filter: `id=eq.${conn.request_id}`,
+          },
+          (payload) => {
+            setConnection((prev: any) => ({
+              ...prev,
+              request: {
+                ...prev.request,
+                status: payload.new.status,
+              },
+            }));
+          }
+        )
+        .subscribe();
+
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(messageChannel);
+        supabase.removeChannel(requestChannel);
       };
     }
 
