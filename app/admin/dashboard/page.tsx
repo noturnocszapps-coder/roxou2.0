@@ -65,12 +65,12 @@ export default async function AdminDashboard() {
             <Zap className="text-roxou-primary w-6 h-6 fill-current" />
             <span className="text-xl font-display font-bold tracking-tighter">ROXOU ADMIN</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-3">
-              <span className="text-xs font-bold text-roxou-primary uppercase tracking-widest">Painel de Controle</span>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="hidden md:inline text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Painel de Controle</span>
               <Link 
                 href="/profile"
-                className="w-10 h-10 rounded-full bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary transition-all active:scale-95"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary transition-all active:scale-95 shadow-lg"
               >
                 <img 
                   src={user.user_metadata.avatar_url || `https://ui-avatars.com/api/?name=${user.email}`} 
