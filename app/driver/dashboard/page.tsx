@@ -89,7 +89,6 @@ export default async function DriverDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-roxou-primary uppercase tracking-wider">Motorista VIP</p>
               <p className="text-[10px] text-roxou-text-muted">Status: Aprovado</p>
             </div>
             <Link 
@@ -113,11 +112,10 @@ export default async function DriverDashboard() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-display font-extrabold mb-2 text-white">Salve, {user.user_metadata.full_name?.split(' ')[0] || 'Motorista'}!</h1>
-            <p className="text-roxou-text-muted">A noite está agitada. Confira quem precisa de transporte agora.</p>
+            <p className="text-roxou-text-muted">Confira quem precisa de transporte agora na rede.</p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-roxou-primary/10 border border-roxou-primary/20 text-roxou-primary text-[10px] font-black uppercase tracking-widest">
-            <div className="w-1.5 h-1.5 rounded-full bg-roxou-primary animate-pulse" />
-            Ativo
+            Painel Ativo
           </div>
         </div>
 
@@ -145,7 +143,6 @@ export default async function DriverDashboard() {
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute bottom-1 right-1 w-3 h-3 bg-emerald-500 border-2 border-roxou-surface rounded-full" />
                   </div>
                   <p className="text-[10px] text-roxou-text-muted text-center mt-2 font-bold truncate">{conn.passenger.full_name.split(' ')[0]}</p>
                 </Link>

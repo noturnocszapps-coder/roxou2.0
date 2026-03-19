@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Clock, MapPin, Zap, History, LayoutDashboard, ChevronRight } from "lucide-react";
+import { Clock, MapPin, Zap, History, LayoutDashboard, ChevronRight, Shield } from "lucide-react";
 import TimeAgo from "@/components/TimeAgo";
 import PassengerCancelButton from "@/components/PassengerCancelButton";
 import { motion, AnimatePresence } from "motion/react";
@@ -135,21 +135,21 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                     <div
                       className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] ${
                         req.status === "open"
-                          ? "bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary shadow-[0_0_10px_rgba(124,58,237,0.1)]"
-                          : req.status === "accepted"
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                          : req.status === "in_progress"
-                          ? "bg-blue-500/10 border-blue-500/20 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]"
-                          : req.status === "completed"
                           ? "bg-roxou-text-muted/10 border-roxou-text-muted/20 text-roxou-text-muted"
+                          : req.status === "accepted"
+                          ? "bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary shadow-[0_0_10px_rgba(124,58,237,0.1)]"
+                          : req.status === "in_progress"
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                          : req.status === "completed"
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
                           : "bg-red-500/10 border-red-500/20 text-red-500"
                       }`}
                     >
                       <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                        req.status === "open" ? "bg-roxou-primary" :
-                        req.status === "accepted" ? "bg-emerald-500" :
-                        req.status === "in_progress" ? "bg-blue-500" :
-                        req.status === "completed" ? "bg-roxou-text-muted" : "bg-red-500"
+                        req.status === "open" ? "bg-roxou-text-muted" :
+                        req.status === "accepted" ? "bg-roxou-primary" :
+                        req.status === "in_progress" ? "bg-amber-500" :
+                        req.status === "completed" ? "bg-emerald-500" : "bg-red-500"
                       }`} />
                       {req.status === "open"
                         ? "Aberto"
@@ -161,6 +161,12 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                         ? "Finalizado"
                         : "Cancelado"}
                     </div>
+                    {req.status === "open" && (
+                      <div className="flex items-center gap-1.5 opacity-60">
+                        <Shield className="w-3 h-3 text-roxou-primary/40" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-roxou-text-muted">Pedido ativo na rede</span>
+                      </div>
+                    )}
                     <TimeAgo
                       date={req.created_at}
                       className="text-[10px] text-roxou-text-muted font-black uppercase tracking-[0.2em] opacity-60"
@@ -171,13 +177,15 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className={`mb-6 p-4 rounded-2xl border flex items-center gap-4 relative z-10 overflow-hidden ${
+                      className={`mb-6 p-5 rounded-[24px] border flex items-center gap-5 relative z-10 overflow-hidden ${
                         req.status === "in_progress"
-                          ? "bg-blue-500/5 border-blue-500/10"
+                          ? "bg-amber-500/5 border-amber-500/10"
+                          : req.status === "accepted"
+                          ? "bg-roxou-primary/5 border-roxou-primary/10"
                           : "bg-emerald-500/5 border-emerald-500/10"
                       }`}
                     >
-                      <div className="w-10 h-10 rounded-full bg-roxou-bg border border-roxou-border overflow-hidden ring-2 ring-roxou-primary/20">
+                      <div className="w-14 h-14 rounded-full bg-roxou-bg border border-roxou-border overflow-hidden ring-2 ring-roxou-primary/20 flex-shrink-0">
                         <img
                           src={req.driver.avatar_url || `https://ui-avatars.com/api/?name=${req.driver.full_name}`}
                           alt={req.driver.full_name}
@@ -185,24 +193,29 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                           referrerPolicy="no-referrer"
                         />
                       </div>
-                      <div>
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-base font-black text-white leading-tight">
+                            {req.driver.full_name}
+                          </p>
+                          {req.driver.driver_status === 'approved' && (
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-roxou-primary/20 border border-roxou-primary/30">
+                              <Shield className="w-2.5 h-2.5 text-roxou-primary" />
+                              <span className="text-[8px] font-black uppercase tracking-widest text-roxou-primary">Verificado</span>
+                            </div>
+                          )}
+                        </div>
                         <p
-                          className={`text-[10px] uppercase font-black tracking-[0.2em] mb-0.5 ${
-                            req.status === "in_progress" ? "text-blue-400" : "text-emerald-500"
+                          className={`text-[10px] uppercase font-black tracking-[0.2em] ${
+                            req.status === "in_progress" ? "text-amber-500" : 
+                            req.status === "accepted" ? "text-roxou-primary" : "text-emerald-500"
                           }`}
                         >
                           {req.status === "in_progress"
-                            ? "Corrida em andamento"
+                            ? "Motorista levando você"
                             : req.status === "completed"
                             ? "Corrida finalizada"
                             : "Motorista a caminho"}
-                        </p>
-                        <p className="text-sm font-bold text-white leading-tight">
-                          {req.status === "completed"
-                            ? `Você viajou com ${req.driver.full_name}`
-                            : `${req.driver.full_name} ${
-                                req.status === "in_progress" ? "está levando você" : "aceitou seu pedido!"
-                              }`}
                         </p>
                       </div>
                     </motion.div>
@@ -246,7 +259,7 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
               </div>
               <div className="space-y-2">
                 <p className="text-xl font-display font-black text-white italic">Nenhum rolê ainda...</p>
-                <p className="text-roxou-text-muted font-medium">Bora chamar um motorista para hoje?</p>
+                <p className="text-roxou-text-muted font-medium">Alguém já vai te levar, bora pedir?</p>
               </div>
               <motion.button 
                 whileHover={{ scale: 1.05 }}

@@ -13,20 +13,9 @@ export default function LiveIndicators({ initialDrivers = 12, initialRequests = 
   const [driversOnline, setDriversOnline] = useState(initialDrivers);
   const [activeRequests, setActiveRequests] = useState(initialRequests);
 
-  // Simulate real-time fluctuations to make it feel "alive"
+  // Remove real-time fluctuations to keep it generic and honest
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDriversOnline(prev => {
-        const change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-        return Math.max(5, prev + change);
-      });
-      setActiveRequests(prev => {
-        const change = Math.floor(Math.random() * 3) - 1;
-        return Math.max(2, prev + change);
-      });
-    }, 10000);
-
-    return () => clearInterval(interval);
+    // No-op: we don't simulate fluctuations anymore
   }, []);
 
   return (

@@ -164,7 +164,7 @@ export default function ChatPage() {
             </div>
             <div>
               <h3 className="font-bold text-sm">{otherUser.full_name}</h3>
-              <p className="text-[10px] text-roxou-primary font-bold uppercase tracking-widest">Online</p>
+              <p className="text-[10px] text-roxou-text-muted font-bold uppercase tracking-widest">Chat Ativo</p>
             </div>
           </div>
         </div>
@@ -211,7 +211,7 @@ export default function ChatPage() {
           >
             <div className={`max-w-[80%] p-4 rounded-3xl ${
               msg.sender_id === currentUser.id 
-                ? 'bg-roxou-primary text-white rounded-tr-none' 
+                ? 'bg-roxou-primary text-white rounded-tr-none shadow-lg shadow-roxou-primary/10' 
                 : 'bg-roxou-surface border border-roxou-border text-roxou-text rounded-tl-none'
             }`}>
               <p className="text-sm leading-relaxed">{msg.content}</p>

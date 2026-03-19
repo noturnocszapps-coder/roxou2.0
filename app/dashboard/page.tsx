@@ -17,7 +17,7 @@ export default async function PassengerDashboard() {
     .from("transport_requests")
     .select(`
       *,
-      driver:profiles!transport_requests_driver_id_fkey(full_name, avatar_url)
+      driver:profiles!transport_requests_driver_id_fkey(full_name, avatar_url, driver_status)
     `)
     .eq("passenger_id", user.id)
     .order("created_at", { ascending: false });
@@ -27,7 +27,7 @@ export default async function PassengerDashboard() {
     .from("connections")
     .select(`
       *,
-      driver:profiles!connections_driver_id_fkey(full_name, avatar_url),
+      driver:profiles!connections_driver_id_fkey(full_name, avatar_url, driver_status),
       request:transport_requests(origin, departure_time, status)
     `)
     .eq("passenger_id", user.id)

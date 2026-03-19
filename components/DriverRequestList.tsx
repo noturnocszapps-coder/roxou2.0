@@ -74,13 +74,11 @@ export default function DriverRequestList({
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-roxou-surface rounded-full" />
           </div>
           <div>
             <h4 className="font-bold text-lg text-white">{req.passenger.full_name}</h4>
             <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 text-yellow-500 fill-current" />
-              <span className="text-[10px] text-roxou-text-muted font-bold">4.9 • Passageiro VIP</span>
+              <span className="text-[10px] text-roxou-text-muted font-bold uppercase tracking-widest">Passageiro</span>
             </div>
           </div>
         </div>
@@ -134,7 +132,7 @@ export default function DriverRequestList({
           <DollarSign className="w-4 h-4 text-emerald-500" />
           <div>
             <p className="text-[9px] text-roxou-text-muted uppercase font-bold">Estimativa</p>
-            <p className="text-xs font-bold text-emerald-500">R$ 25 - 35</p>
+            <p className="text-xs font-bold text-emerald-500">A combinar</p>
           </div>
         </div>
       </div>
