@@ -198,7 +198,7 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                           <p className="text-base font-black text-white leading-tight">
                             {req.driver.full_name}
                           </p>
-                          {req.driver.driver_status === 'approved' && (
+                          {req.driver.drivers?.[0]?.verification_status === 'approved' && (
                             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-roxou-primary/20 border border-roxou-primary/30">
                               <Shield className="w-2.5 h-2.5 text-roxou-primary" />
                               <span className="text-[8px] font-black uppercase tracking-widest text-roxou-primary">Verificado</span>

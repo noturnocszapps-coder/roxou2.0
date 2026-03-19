@@ -48,23 +48,32 @@ export async function middleware(request: NextRequest) {
   } 
   // 2. Driver Rule
   else if (role === "driver") {
+    // Fetch driver record for verification status - this is the ONLY source of truth for approval
     const { data: driver } = await supabase
       .from("drivers")
       .select("verification_status")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const isApproved = driver?.verification_status === "approved";
+    const verificationStatus = driver?.verification_status;
+    const isApproved = verificationStatus === "approved";
 
     if (isApproved) {
-      // Approved driver should only be in /driver routes (except onboarding) or profile
-      if (!path.startsWith("/driver") || path === "/driver/onboarding") {
-        if (path !== "/profile" && path !== "/blocked" && !path.startsWith("/chat")) {
-          return NextResponse.redirect(new URL("/driver/dashboard", request.url));
-        }
+      // Approved driver:
+      // - Allowed: /driver/dashboard, /driver/* (except onboarding), /profile, /blocked, /chat/*
+      // - Redirected to /driver/dashboard if on: /, /login, /dashboard, /driver/onboarding
+      if (path === "/driver/onboarding" || path === "/" || path === "/dashboard" || path.startsWith("/login")) {
+        return NextResponse.redirect(new URL("/driver/dashboard", request.url));
+      }
+      
+      // If trying to access passenger dashboard or admin, redirect to driver dashboard
+      if (path === "/dashboard" || path.startsWith("/admin")) {
+        return NextResponse.redirect(new URL("/driver/dashboard", request.url));
       }
     } else {
-      // Pending/Rejected/No-row driver should only be in /driver/onboarding or profile
+      // Non-approved driver (pending, rejected, or no record):
+      // - Allowed: /driver/onboarding, /profile, /blocked
+      // - Redirected to /driver/onboarding if on: /, /login, /dashboard, /driver/dashboard, /driver/* (except onboarding)
       if (path !== "/driver/onboarding" && path !== "/profile" && path !== "/blocked") {
         return NextResponse.redirect(new URL("/driver/onboarding", request.url));
       }

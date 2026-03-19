@@ -197,7 +197,7 @@ export default function DashboardClient({ user, requests, connections }: { user:
                     <div className="flex-grow relative z-10">
                       <div className="flex items-center gap-2 mb-0.5">
                         <h4 className="font-black text-white tracking-tight">{conn.driver.full_name}</h4>
-                        {conn.driver.driver_status === 'approved' && (
+                        {conn.driver.drivers?.[0]?.verification_status === 'approved' && (
                           <Shield className="w-3 h-3 text-roxou-primary" />
                         )}
                         <div className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${

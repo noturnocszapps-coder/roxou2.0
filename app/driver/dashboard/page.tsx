@@ -29,7 +29,7 @@ export default async function DriverDashboard() {
     redirect("/dashboard");
   }
 
-  // Fetch driver record for verification status
+  // Fetch driver record for verification status - this is the ONLY source of truth for approval
   const { data: driver } = await supabase
     .from("drivers")
     .select("verification_status")
@@ -37,6 +37,7 @@ export default async function DriverDashboard() {
     .maybeSingle();
 
   if (driver?.verification_status !== "approved") {
+    console.log("Non-approved driver detected on dashboard. Forcing redirect to onboarding.");
     redirect("/driver/onboarding");
   }
 

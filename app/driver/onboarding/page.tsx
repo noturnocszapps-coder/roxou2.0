@@ -3,8 +3,8 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Zap, Car, User, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import BackToHomeButton from "@/components/BackToHomeButton";
 
 export default function DriverOnboardingPage() {
   const supabase = createClient();
@@ -12,6 +12,8 @@ export default function DriverOnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [driverFound, setDriverFound] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -37,6 +39,8 @@ export default function DriverOnboardingPage() {
         .eq("id", user.id)
         .single();
 
+      setRole(profile?.role || null);
+
       // Fetch driver record for verification status
       const { data: driver } = await supabase
         .from("drivers")
@@ -44,7 +48,11 @@ export default function DriverOnboardingPage() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      setDriverFound(!!driver);
+
+      // PART 2 & 6: Force approved driver out of pending screen
       if (driver?.verification_status === "approved") {
+        console.log("Approved driver detected on onboarding page. Forcing redirect to dashboard.");
         router.push("/driver/dashboard");
         return;
       }
@@ -125,23 +133,21 @@ export default function DriverOnboardingPage() {
   if (status === "pending") {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-roxou-bg relative overflow-hidden">
-        {/* Background decorative elements - ensure they don't block clicks */}
+        {/* PART 4: Background decorative elements - ensure they don't block clicks */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-roxou-primary/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-roxou-secondary/5 blur-[80px] rounded-full -z-10 pointer-events-none" />
         
-        <div className="w-full max-w-md p-10 rounded-[40px] bg-roxou-surface border border-roxou-border text-center space-y-8 relative z-10">
-          <div className="w-20 h-20 bg-roxou-primary/20 rounded-full flex items-center justify-center mx-auto">
+        <div className="w-full max-w-md p-10 rounded-[40px] bg-roxou-surface border border-roxou-border text-center space-y-8 relative z-10 pointer-events-none">
+          <div className="w-20 h-20 bg-roxou-primary/20 rounded-full flex items-center justify-center mx-auto pointer-events-none">
             <Clock className="text-roxou-primary w-10 h-10" />
           </div>
-          <h1 className="text-3xl font-display font-extrabold">Análise em Andamento</h1>
-          <p className="text-roxou-text-muted leading-relaxed">
+          <h1 className="text-3xl font-display font-extrabold pointer-events-none">Análise em Andamento</h1>
+          <p className="text-roxou-text-muted leading-relaxed pointer-events-none">
             Recebemos seus dados! Nossa equipe está revisando seu perfil para garantir a segurança da plataforma. Você receberá um aviso assim que for aprovado.
           </p>
-          <button 
-            onClick={() => router.push("/")}
-            className="w-full py-4 glass rounded-full font-bold relative z-50 pointer-events-auto flex items-center justify-center hover:bg-white/5 transition-all active:scale-95 shadow-xl"
-          >
-            Voltar ao Início
-          </button>
+          
+          {/* PART 3: Rebuild the button as a true client component */}
+          <BackToHomeButton />
         </div>
       </div>
     );
@@ -149,7 +155,7 @@ export default function DriverOnboardingPage() {
 
   if (status === "rejected") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-roxou-bg">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-roxou-bg relative">
         <div className="w-full max-w-md p-10 rounded-[40px] bg-roxou-surface border border-roxou-border text-center space-y-8">
           <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="text-red-500 w-10 h-10" />
@@ -164,6 +170,7 @@ export default function DriverOnboardingPage() {
           >
             Tentar Novamente
           </button>
+          <BackToHomeButton />
         </div>
       </div>
     );
