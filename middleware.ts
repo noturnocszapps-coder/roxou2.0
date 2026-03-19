@@ -37,53 +37,47 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/blocked", request.url));
   }
 
-  // Terms acceptance check (if applicable)
-  // if (!profile.terms_accepted && path !== "/terms-acceptance") {
-  //   return NextResponse.redirect(new URL("/terms-acceptance", request.url));
-  // }
-
-  // Redirect from landing or login to dashboard
-  if (path === "/" || path.startsWith("/login")) {
-    const role = profile.role || "passenger"; // Default to passenger
-    
-    if (role === "admin") {
+  // Deterministic Role-Based Redirects
+  const role = profile.role || "passenger";
+  
+  // 1. Admin Rule
+  if (role === "admin") {
+    if (!path.startsWith("/admin") && path !== "/profile" && path !== "/blocked") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-    } else if (role === "driver") {
-      const { data: driver } = await supabase
-        .from("drivers")
-        .select("verification_status")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (driver?.verification_status === "approved") {
-        return NextResponse.redirect(new URL("/driver/dashboard", request.url));
-      } else {
-        return NextResponse.redirect(new URL("/driver/onboarding", request.url));
-      }
-    } else {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-  }
-
-  // Role-based route protection
-  if (path.startsWith("/admin") && profile.role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (path.startsWith("/driver") && profile.role !== "driver") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  // Driver approved check
-  if (path === "/driver/dashboard" && profile.role === "driver") {
+  } 
+  // 2. Driver Rule
+  else if (role === "driver") {
     const { data: driver } = await supabase
       .from("drivers")
       .select("verification_status")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (driver?.verification_status !== "approved") {
-      return NextResponse.redirect(new URL("/driver/onboarding", request.url));
+    const isApproved = driver?.verification_status === "approved";
+
+    if (isApproved) {
+      // Approved driver should only be in /driver routes (except onboarding) or profile
+      if (!path.startsWith("/driver") || path === "/driver/onboarding") {
+        if (path !== "/profile" && path !== "/blocked" && !path.startsWith("/chat")) {
+          return NextResponse.redirect(new URL("/driver/dashboard", request.url));
+        }
+      }
+    } else {
+      // Pending/Rejected/No-row driver should only be in /driver/onboarding or profile
+      if (path !== "/driver/onboarding" && path !== "/profile" && path !== "/blocked") {
+        return NextResponse.redirect(new URL("/driver/onboarding", request.url));
+      }
+    }
+  } 
+  // 3. Passenger Rule
+  else {
+    if (path.startsWith("/admin") || path.startsWith("/driver")) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    // If on landing or login, go to dashboard
+    if (path === "/" || path.startsWith("/login")) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 

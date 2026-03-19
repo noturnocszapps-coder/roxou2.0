@@ -44,6 +44,11 @@ export default function DriverOnboardingPage() {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      if (driver?.verification_status === "approved") {
+        router.push("/driver/dashboard");
+        return;
+      }
+
       if (driver) {
         setStatus(driver.verification_status);
       } else if (profile?.role === "driver") {
@@ -60,7 +65,7 @@ export default function DriverOnboardingPage() {
       setFetching(false);
     }
     checkStatus();
-  }, []);
+  }, [router, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,8 +124,11 @@ export default function DriverOnboardingPage() {
 
   if (status === "pending") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-roxou-bg">
-        <div className="w-full max-w-md p-10 rounded-[40px] bg-roxou-surface border border-roxou-border text-center space-y-8">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-roxou-bg relative overflow-hidden">
+        {/* Background decorative elements - ensure they don't block clicks */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-roxou-primary/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
+        
+        <div className="w-full max-w-md p-10 rounded-[40px] bg-roxou-surface border border-roxou-border text-center space-y-8 relative z-10">
           <div className="w-20 h-20 bg-roxou-primary/20 rounded-full flex items-center justify-center mx-auto">
             <Clock className="text-roxou-primary w-10 h-10" />
           </div>
@@ -128,12 +136,12 @@ export default function DriverOnboardingPage() {
           <p className="text-roxou-text-muted leading-relaxed">
             Recebemos seus dados! Nossa equipe está revisando seu perfil para garantir a segurança da plataforma. Você receberá um aviso assim que for aprovado.
           </p>
-          <Link 
-            href="/"
-            className="w-full py-4 glass rounded-full font-bold relative z-50 flex items-center justify-center hover:bg-white/5 transition-all active:scale-95"
+          <button 
+            onClick={() => router.push("/")}
+            className="w-full py-4 glass rounded-full font-bold relative z-50 pointer-events-auto flex items-center justify-center hover:bg-white/5 transition-all active:scale-95 shadow-xl"
           >
             Voltar ao Início
-          </Link>
+          </button>
         </div>
       </div>
     );
