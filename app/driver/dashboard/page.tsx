@@ -21,13 +21,9 @@ export default async function DriverDashboard() {
   // Fetch driver profile
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select("role")
     .eq("id", user.id)
     .single();
-
-  if (profile?.role !== "driver") {
-    redirect("/dashboard");
-  }
 
   // Fetch driver record for verification status - this is the ONLY source of truth for approval
   const { data: driver } = await supabase
@@ -36,11 +32,22 @@ export default async function DriverDashboard() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (driver?.verification_status !== "approved") {
+  const role = profile?.role;
+  const verificationStatus = driver?.verification_status;
+
+  // 1. if not driver -> redirect("/")
+  if (role !== "driver") {
+    console.log("Not a driver role on dashboard. Redirecting to home.");
+    redirect("/");
+  }
+
+  // 2. if not approved -> redirect("/driver/onboarding")
+  if (verificationStatus !== "approved") {
     console.log("Non-approved driver detected on dashboard. Forcing redirect to onboarding.");
     redirect("/driver/onboarding");
   }
 
+  // 3. if approved -> render dashboard
   // Fetch all relevant transport requests
   // 1. Leads (open/pending and no driver assigned)
   const { data: leads } = await supabase

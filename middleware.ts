@@ -82,7 +82,7 @@ export async function middleware(request: NextRequest) {
   // 3. Passenger Rule
   else {
     if (path.startsWith("/admin") || path.startsWith("/driver")) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
     // If on landing or login, go to dashboard
     if (path === "/" || path.startsWith("/login")) {
