@@ -30,7 +30,7 @@ export default function RefreshDashboard() {
       <button 
         onClick={handleRefresh}
         disabled={isLoading}
-        className={`p-2 rounded-xl bg-roxou-surface border border-roxou-border hover:border-roxou-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`p-2.5 sm:p-2 rounded-xl bg-roxou-surface border border-roxou-border hover:border-roxou-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed`}
         title="Atualizar dados"
       >
         <RefreshCw className={`w-4 h-4 text-roxou-text-muted group-hover:text-roxou-primary transition-all duration-500 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180'}`} />
