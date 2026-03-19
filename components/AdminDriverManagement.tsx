@@ -70,6 +70,10 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
     setActionLoading(null);
   };
 
+  const pendingCount = drivers.filter(d => d.driver_status === 'pending').length;
+  const approvedCount = drivers.filter(d => d.driver_status === 'approved').length;
+  const rejectedCount = drivers.filter(d => d.driver_status === 'rejected').length;
+
   return (
     <section className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -78,24 +82,33 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
           Gestão de Motoristas
         </h3>
         
-        <div className="flex items-center gap-2 bg-roxou-surface p-1 rounded-2xl border border-roxou-border">
+        <div className="flex items-center gap-2 bg-roxou-surface p-1.5 rounded-2xl border border-roxou-border shadow-inner">
           <button 
             onClick={() => setFilter("pending")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filter === 'pending' ? 'bg-roxou-primary text-white shadow-lg shadow-roxou-primary/20' : 'text-roxou-text-muted hover:text-white'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${filter === 'pending' ? 'bg-roxou-primary text-white shadow-lg shadow-roxou-primary/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
           >
             Pendentes
+            <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === 'pending' ? 'bg-white text-roxou-primary' : 'bg-roxou-border text-roxou-text-muted'}`}>
+              {pendingCount}
+            </span>
           </button>
           <button 
             onClick={() => setFilter("approved")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filter === 'approved' ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : 'text-roxou-text-muted hover:text-white'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${filter === 'approved' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
           >
             Aprovados
+            <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === 'approved' ? 'bg-white text-emerald-500' : 'bg-roxou-border text-roxou-text-muted'}`}>
+              {approvedCount}
+            </span>
           </button>
           <button 
             onClick={() => setFilter("rejected")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filter === 'rejected' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-roxou-text-muted hover:text-white'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${filter === 'rejected' ? 'bg-red-500 text-white shadow-lg shadow-red-500/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
           >
             Rejeitados
+            <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === 'rejected' ? 'bg-white text-red-500' : 'bg-roxou-border text-roxou-text-muted'}`}>
+              {rejectedCount}
+            </span>
           </button>
         </div>
       </div>
@@ -182,12 +195,12 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                <XCircle className="w-8 h-8 text-roxou-text-muted/30" />}
             </div>
             <h4 className="font-bold text-roxou-text-muted mb-1">
-              {filter === 'pending' ? 'Tudo em dia!' : 
+              {filter === 'pending' ? 'Nenhum motorista pendente' : 
                filter === 'approved' ? 'Nenhum aprovado' : 
                'Nenhum rejeitado'}
             </h4>
             <p className="text-xs text-roxou-text-muted/60">
-              {filter === 'pending' ? 'Não há novos motoristas para aprovar.' : 
+              {filter === 'pending' ? 'Quando novos cadastros chegarem, aparecerão aqui.' : 
                'Não encontramos motoristas com este status.'}
             </p>
           </div>

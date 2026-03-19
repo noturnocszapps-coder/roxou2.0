@@ -4,6 +4,7 @@ import { Zap, Users, ShieldAlert, CheckCircle2, XCircle, Clock, ChevronRight, Re
 import Link from "next/link";
 import LogoutButton from "@/components/LogoutButton";
 import AdminDriverManagement from "@/components/AdminDriverManagement";
+import RefreshDashboard from "@/components/RefreshDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -86,34 +87,64 @@ export default async function AdminDashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 pt-10 space-y-12">
+        {/* Page Title & Subtitle */}
+        <div className="space-y-2">
+          <h1 className="text-4xl font-display font-black text-white tracking-tight">Roxou Admin</h1>
+          <p className="text-roxou-text-muted font-medium">Gerencie motoristas e acompanhe a atividade da plataforma</p>
+        </div>
+
         {/* Stats Grid */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-roxou-primary">Métricas em Tempo Real</h2>
-            <Link href="/admin/dashboard" className="p-2 rounded-xl bg-roxou-surface border border-roxou-border hover:border-roxou-primary transition-all group">
-              <RefreshCw className="w-4 h-4 text-roxou-text-muted group-hover:rotate-180 transition-all duration-500" />
-            </Link>
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-roxou-primary">Visão Geral da Plataforma</h2>
+            <RefreshDashboard />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="p-8 rounded-[40px] bg-roxou-surface border border-roxou-border relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-roxou-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-              <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-2">Total Motoristas</p>
-              <p className="text-4xl font-display font-bold text-white">{totalDrivers || 0}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {/* Main Metric: Motoristas */}
+            <div className="p-8 rounded-[40px] bg-roxou-surface border-2 border-roxou-primary/30 relative overflow-hidden group md:col-span-2 lg:col-span-2 violet-glow-sm">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-roxou-primary/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-roxou-primary/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-roxou-primary" />
+                </div>
+                <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest">Total Motoristas</p>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-5xl font-display font-black text-white">{totalDrivers || 0}</p>
+                {totalDrivers === 0 && (
+                  <p className="text-[10px] font-bold text-roxou-text-muted/60 uppercase tracking-widest mt-1">Aguardando atividade</p>
+                )}
+              </div>
             </div>
+
+            {/* Secondary Metric: Pedidos */}
             <div className="p-8 rounded-[40px] bg-roxou-surface border border-roxou-border relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-24 h-24 bg-roxou-secondary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
               <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-2">Pedidos Totais</p>
-              <p className="text-4xl font-display font-bold text-white">{totalRequests || 0}</p>
+              <p className="text-3xl font-display font-bold text-white/80">{totalRequests || 0}</p>
+              {totalRequests === 0 && (
+                <p className="text-[10px] font-bold text-roxou-text-muted/40 uppercase tracking-widest mt-1">Nenhum dado ainda</p>
+              )}
             </div>
-            <div className="p-8 rounded-[40px] bg-roxou-surface border border-roxou-border relative overflow-hidden group">
+
+            {/* Alert Metric: Denúncias */}
+            <div className="p-8 rounded-[40px] bg-roxou-surface border border-red-500/30 relative overflow-hidden group shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+              <p className="text-[10px] text-red-500/80 uppercase font-bold tracking-widest mb-2">Denúncias</p>
+              <p className="text-3xl font-display font-bold text-red-500">{reports?.length || 0}</p>
+              {(!reports || reports.length === 0) && (
+                <p className="text-[10px] font-bold text-red-500/40 uppercase tracking-widest mt-1">Tudo limpo</p>
+              )}
+            </div>
+
+            {/* Pending Metric */}
+            <div className="p-8 rounded-[40px] bg-roxou-surface border border-roxou-border relative overflow-hidden group lg:col-span-1 md:col-span-1">
               <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
               <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-2">Pendentes</p>
-              <p className="text-4xl font-display font-bold text-yellow-500">{pendingCount}</p>
-            </div>
-            <div className="p-8 rounded-[40px] bg-roxou-surface border border-roxou-border relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-              <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-2">Denúncias</p>
-              <p className="text-4xl font-display font-bold text-red-500">{reports?.length || 0}</p>
+              <p className="text-3xl font-display font-bold text-yellow-500">{pendingCount}</p>
+              {pendingCount === 0 && (
+                <p className="text-[10px] font-bold text-roxou-text-muted/40 uppercase tracking-widest mt-1">Sem pendências</p>
+              )}
             </div>
           </div>
         </div>
