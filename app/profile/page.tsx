@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [driverStatus, setDriverStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -33,6 +34,19 @@ export default function ProfilePage() {
         setError("Erro ao carregar perfil.");
       } else {
         setProfile(data);
+        
+        // Fetch driver status if role is driver
+        if (data.role === 'driver') {
+          const { data: driver } = await supabase
+            .from("drivers")
+            .select("verification_status")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          
+          if (driver) {
+            setDriverStatus(driver.verification_status);
+          }
+        }
       }
       setLoading(false);
     }
@@ -144,8 +158,8 @@ export default function ProfilePage() {
               {profile.role === 'driver' && (
                 <div className="text-right">
                   <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-1">Status</p>
-                  <p className={`font-bold uppercase tracking-tighter ${profile.driver_status === 'approved' ? 'text-green-500' : 'text-yellow-500'}`}>
-                    {profile.driver_status === 'approved' ? 'Aprovado' : 'Pendente'}
+                  <p className={`font-bold uppercase tracking-tighter ${driverStatus === 'approved' ? 'text-green-500' : 'text-yellow-500'}`}>
+                    {driverStatus === 'approved' ? 'Aprovado' : 'Pendente'}
                   </p>
                 </div>
               )}

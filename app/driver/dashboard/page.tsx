@@ -29,7 +29,14 @@ export default async function DriverDashboard() {
     redirect("/dashboard");
   }
 
-  if (profile?.driver_status !== "approved") {
+  // Fetch driver record for verification status
+  const { data: driver } = await supabase
+    .from("drivers")
+    .select("verification_status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (driver?.verification_status !== "approved") {
     redirect("/driver/onboarding");
   }
 

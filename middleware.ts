@@ -49,7 +49,13 @@ export async function middleware(request: NextRequest) {
     if (role === "admin") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     } else if (role === "driver") {
-      if (profile.driver_status === "approved") {
+      const { data: driver } = await supabase
+        .from("drivers")
+        .select("verification_status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (driver?.verification_status === "approved") {
         return NextResponse.redirect(new URL("/driver/dashboard", request.url));
       } else {
         return NextResponse.redirect(new URL("/driver/onboarding", request.url));
@@ -69,8 +75,16 @@ export async function middleware(request: NextRequest) {
   }
 
   // Driver approved check
-  if (path === "/driver/dashboard" && profile.role === "driver" && profile.driver_status !== "approved") {
-    return NextResponse.redirect(new URL("/driver/onboarding", request.url));
+  if (path === "/driver/dashboard" && profile.role === "driver") {
+    const { data: driver } = await supabase
+      .from("drivers")
+      .select("verification_status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (driver?.verification_status !== "approved") {
+      return NextResponse.redirect(new URL("/driver/onboarding", request.url));
+    }
   }
 
   return supabaseResponse;

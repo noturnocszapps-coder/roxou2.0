@@ -28,11 +28,27 @@ export default async function AdminDashboard() {
   }
 
   // Fetch all drivers for the management component
-  const { data: allDrivers } = await supabase
+  const { data: profilesWithDrivers } = await supabase
     .from("profiles")
-    .select("*")
+    .select(`
+      id,
+      full_name,
+      email,
+      avatar_url,
+      updated_at,
+      drivers:drivers(verification_status)
+    `)
     .eq("role", "driver")
     .order("updated_at", { ascending: false });
+
+  const allDrivers = (profilesWithDrivers || []).map((p: any) => ({
+    id: p.id,
+    full_name: p.full_name,
+    email: p.email,
+    avatar_url: p.avatar_url,
+    verification_status: p.drivers?.[0]?.verification_status || "pending",
+    updated_at: p.updated_at
+  }));
 
   // Fetch recent reports
   const { data: reports } = await supabase
@@ -55,7 +71,7 @@ export default async function AdminDashboard() {
     .from("transport_requests")
     .select("*", { count: 'exact', head: true });
 
-  const pendingCount = allDrivers?.filter(d => d.driver_status === 'pending').length || 0;
+  const pendingCount = allDrivers.filter(d => d.verification_status === 'pending').length;
 
   return (
     <div className="min-h-screen bg-roxou-bg pb-20">

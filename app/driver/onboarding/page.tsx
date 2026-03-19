@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Zap, Car, User, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 export default function DriverOnboardingPage() {
@@ -29,18 +30,33 @@ export default function DriverOnboardingPage() {
         return;
       }
 
+      // Fetch profile to get role and name
       const { data: profile } = await supabase
         .from("profiles")
-        .select("driver_status, full_name")
+        .select("role, full_name")
         .eq("id", user.id)
         .single();
 
-      if (profile) {
-        setStatus(profile.driver_status);
-        if (profile.full_name) {
-          setFormData(prev => ({ ...prev, full_name: profile.full_name }));
-        }
+      // Fetch driver record for verification status
+      const { data: driver } = await supabase
+        .from("drivers")
+        .select("verification_status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (driver) {
+        setStatus(driver.verification_status);
+      } else if (profile?.role === "driver") {
+        // Deterministic fallback: if driver role exists but no drivers row is found, show pending screen
+        setStatus("pending");
+      } else {
+        setStatus(null);
       }
+
+      if (profile?.full_name) {
+        setFormData(prev => ({ ...prev, full_name: profile.full_name }));
+      }
+      
       setFetching(false);
     }
     checkStatus();
@@ -60,7 +76,6 @@ export default function DriverOnboardingPage() {
         role: "driver",
         full_name: formData.full_name,
         phone: formData.phone,
-        driver_status: "pending",
         driver_documents: {
           vehicle_model: formData.vehicle_model,
           vehicle_plate: formData.vehicle_plate,
@@ -72,6 +87,21 @@ export default function DriverOnboardingPage() {
 
     if (updateError) {
       setError(updateError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Also update drivers table to ensure verification_status is tracked
+    const { error: driverError } = await supabase
+      .from("drivers")
+      .upsert({
+        user_id: user.id,
+        verification_status: "pending",
+        updated_at: new Date().toISOString(),
+      });
+
+    if (driverError) {
+      setError(driverError.message);
       setLoading(false);
     } else {
       setStatus("pending");
@@ -98,12 +128,12 @@ export default function DriverOnboardingPage() {
           <p className="text-roxou-text-muted leading-relaxed">
             Recebemos seus dados! Nossa equipe está revisando seu perfil para garantir a segurança da plataforma. Você receberá um aviso assim que for aprovado.
           </p>
-          <button 
-            onClick={() => router.push("/")}
-            className="w-full py-4 glass rounded-full font-bold"
+          <Link 
+            href="/"
+            className="w-full py-4 glass rounded-full font-bold relative z-50 flex items-center justify-center hover:bg-white/5 transition-all active:scale-95"
           >
             Voltar ao Início
-          </button>
+          </Link>
         </div>
       </div>
     );

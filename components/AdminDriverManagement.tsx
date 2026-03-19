@@ -21,7 +21,7 @@ interface Driver {
   full_name: string;
   email: string;
   avatar_url: string;
-  driver_status: string;
+  verification_status: string;
   updated_at: string;
 }
 
@@ -33,18 +33,34 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const filteredDrivers = drivers.filter(d => d.driver_status === filter);
+  const filteredDrivers = drivers.filter(d => d.verification_status === filter);
 
   const fetchDrivers = async () => {
     setLoading(true);
+    // Fetch from profiles table and join with drivers
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select(`
+        id,
+        full_name,
+        email,
+        avatar_url,
+        updated_at,
+        drivers:drivers(verification_status)
+      `)
       .eq("role", "driver")
       .order("updated_at", { ascending: false });
     
     if (!error && data) {
-      setDrivers(data);
+      const formattedDrivers = data.map((p: any) => ({
+        id: p.id,
+        full_name: p.full_name || "N/A",
+        email: p.email || "N/A",
+        avatar_url: p.avatar_url || "",
+        verification_status: p.drivers?.[0]?.verification_status || "pending",
+        updated_at: p.updated_at
+      }));
+      setDrivers(formattedDrivers);
     }
     setLoading(false);
   };
@@ -59,9 +75,12 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
 
     setActionLoading("bulk");
     const { error } = await supabase
-      .from("profiles")
-      .update({ driver_status: status })
-      .in("id", driversToUpdate);
+      .from("drivers")
+      .upsert(driversToUpdate.map(id => ({
+        user_id: id,
+        verification_status: status,
+        updated_at: new Date().toISOString()
+      })));
 
     if (!error) {
       await fetchDrivers();
@@ -70,9 +89,9 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
     setActionLoading(null);
   };
 
-  const pendingCount = drivers.filter(d => d.driver_status === 'pending').length;
-  const approvedCount = drivers.filter(d => d.driver_status === 'approved').length;
-  const rejectedCount = drivers.filter(d => d.driver_status === 'rejected').length;
+  const pendingCount = drivers.filter(d => d.verification_status === 'pending').length;
+  const approvedCount = drivers.filter(d => d.verification_status === 'approved').length;
+  const rejectedCount = drivers.filter(d => d.verification_status === 'rejected').length;
 
   return (
     <section className="space-y-6 sm:space-y-8">
@@ -163,17 +182,17 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                   <p className="text-[10px] sm:text-xs text-roxou-text-muted mb-1 sm:mb-2 truncate max-w-[150px] sm:max-w-none">{driver.email}</p>
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-                      driver.driver_status === 'approved' ? 'bg-green-500' : 
-                      driver.driver_status === 'rejected' ? 'bg-red-500' : 
+                      driver.verification_status === 'approved' ? 'bg-green-500' : 
+                      driver.verification_status === 'rejected' ? 'bg-red-500' : 
                       'bg-yellow-500 animate-pulse'
                     }`} />
                     <span className={`text-[8px] sm:text-[10px] uppercase font-bold tracking-widest ${
-                      driver.driver_status === 'approved' ? 'text-green-500' : 
-                      driver.driver_status === 'rejected' ? 'text-red-500' : 
+                      driver.verification_status === 'approved' ? 'text-green-500' : 
+                      driver.verification_status === 'rejected' ? 'text-red-500' : 
                       'text-yellow-500'
                     }`}>
-                      {driver.driver_status === 'approved' ? 'Aprovado' : 
-                       driver.driver_status === 'rejected' ? 'Rejeitado' : 
+                      {driver.verification_status === 'approved' ? 'Aprovado' : 
+                       driver.verification_status === 'rejected' ? 'Rejeitado' : 
                        'Aguardando'}
                     </span>
                   </div>
