@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock, AlertCircle } from "lucide-react";
-import BackToHomeButton from "./BackToHomeButton";
+import DriverLogoutButton from "./DriverLogoutButton";
 
 interface DriverOnboardingStatusProps {
   role: string | null;
@@ -31,15 +31,22 @@ export default function DriverOnboardingStatus({
           )}
         </div>
         
-        <h1 className={`text-3xl font-display font-extrabold ${isRejected ? "text-red-500" : "text-white"}`}>
-          {isRejected ? "Perfil Não Aprovado" : "Análise em Andamento"}
-        </h1>
-        
-        <p className="text-roxou-text-muted leading-relaxed">
-          {isRejected 
-            ? "Infelizmente seu perfil não atende aos requisitos atuais da Roxou. Se você acredita que houve um erro, entre em contato com o suporte."
-            : "Recebemos seus dados! Nossa equipe está revisando seu perfil para garantir a segurança da plataforma. Você receberá um aviso assim que for aprovado."}
-        </p>
+        <div className="space-y-4">
+          <h1 className={`text-3xl font-display font-extrabold ${isRejected ? "text-red-500" : "text-white"}`}>
+            {isRejected ? "Perfil Não Aprovado" : "Análise em Andamento"}
+          </h1>
+          
+          <div className="space-y-4">
+            <p className="text-roxou-text-muted leading-relaxed">
+              {isRejected 
+                ? "Infelizmente seu perfil não atende aos requisitos atuais da Roxou. Se você acredita que houve um erro, entre em contato com o suporte."
+                : "Recebemos seus dados! Nossa equipe está revisando seu perfil para garantir a segurança da plataforma. Você receberá um aviso assim que for aprovado."}
+            </p>
+            <p className="text-roxou-text-muted/60 text-xs font-medium">
+              Você pode sair agora e voltar depois para acompanhar a análise.
+            </p>
+          </div>
+        </div>
 
         {/* PART 4: Temporary Debug Text */}
         <div className="p-4 bg-white/5 rounded-2xl text-left font-mono text-[10px] space-y-1 border border-white/5">
@@ -49,7 +56,7 @@ export default function DriverOnboardingStatus({
           <p className="text-white">verification_status: <span className="text-roxou-text-muted">{verificationStatus || "null"}</span></p>
         </div>
         
-        <BackToHomeButton />
+        <DriverLogoutButton />
       </div>
     </div>
   );
