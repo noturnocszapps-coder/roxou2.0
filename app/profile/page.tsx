@@ -52,7 +52,7 @@ export default function ProfilePage() {
     }
 
     fetchProfile();
-  }, []);
+  }, [supabase, router]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,20 +60,46 @@ export default function ProfilePage() {
     setError(null);
     setSuccess(false);
 
+    // 1. Update Profile
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
         full_name: profile.full_name,
         avatar_url: profile.avatar_url,
+        role: profile.role,
       })
       .eq("id", profile.id);
 
     if (updateError) {
       setError(updateError.message);
-    } else {
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      setSaving(false);
+      return;
     }
+
+    // 2. If role is driver, ensure driver record exists (upsert)
+    if (profile.role === 'driver') {
+      const { error: driverError } = await supabase
+        .from("drivers")
+        .upsert({
+          user_id: profile.id,
+          verification_status: driverStatus || "pending",
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+
+      if (driverError) {
+        setError("Erro ao salvar dados de motorista.");
+        setSaving(false);
+        return;
+      }
+      
+      // Refresh driver status if it was null before
+      if (!driverStatus) {
+        setDriverStatus("pending");
+      }
+    }
+
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
     setSaving(false);
   };
 
@@ -147,23 +173,40 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Role Info (Read Only) */}
-            <div className="p-6 rounded-2xl bg-roxou-surface/50 border border-roxou-border flex justify-between items-center">
-              <div>
-                <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-1">Tipo de Conta</p>
-                <p className="font-bold text-roxou-primary uppercase tracking-tighter">
-                  {profile.role === 'admin' ? 'Administrador' : profile.role === 'driver' ? 'Motorista' : 'Passageiro'}
+            {/* Role Selector */}
+            <div className="space-y-2">
+              <label className="text-xs text-roxou-text-muted uppercase font-bold tracking-widest ml-1">Tipo de Conta</label>
+              <select 
+                className="w-full p-5 rounded-2xl bg-roxou-surface border border-roxou-border focus:border-roxou-primary outline-none transition-all appearance-none cursor-pointer"
+                value={profile.role}
+                onChange={(e) => setProfile({ ...profile, role: e.target.value })}
+                disabled={profile.role === 'admin'}
+              >
+                <option value="passenger">Passageiro</option>
+                <option value="driver">Motorista</option>
+                {profile.role === 'admin' && <option value="admin">Administrador</option>}
+              </select>
+              {profile.role === 'admin' && (
+                <p className="text-[10px] text-roxou-primary uppercase font-bold tracking-widest ml-1">
+                  Contas de administrador não podem ser alteradas aqui.
                 </p>
-              </div>
-              {profile.role === 'driver' && (
-                <div className="text-right">
-                  <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-1">Status</p>
-                  <p className={`font-bold uppercase tracking-tighter ${driverStatus === 'approved' ? 'text-green-500' : 'text-yellow-500'}`}>
-                    {driverStatus === 'approved' ? 'Aprovado' : 'Pendente'}
-                  </p>
-                </div>
               )}
             </div>
+
+            {/* Driver Status Info */}
+            {profile.role === 'driver' && (
+              <div className="p-6 rounded-2xl bg-roxou-surface/50 border border-roxou-border flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] text-roxou-text-muted uppercase font-bold tracking-widest mb-1">Status de Verificação</p>
+                  <p className={`font-bold uppercase tracking-tighter ${driverStatus === 'approved' ? 'text-green-500' : 'text-yellow-500'}`}>
+                    {driverStatus === 'approved' ? 'Aprovado' : 'Pendente / Em Análise'}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-roxou-surface border border-roxou-border flex items-center justify-center">
+                  <Zap className={`w-5 h-5 ${driverStatus === 'approved' ? 'text-green-500' : 'text-yellow-500'}`} />
+                </div>
+              </div>
+            )}
           </div>
 
           {error && (
