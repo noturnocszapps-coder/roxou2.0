@@ -48,7 +48,7 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
     setLoading(false);
   }, [initialRequests]);
 
-  const activeRequests = requests.filter((r) => ["open", "accepted", "in_progress"].includes(r.status));
+  const activeRequests = requests.filter((r) => ["open", "accepted", "en_route", "arrived", "in_progress"].includes(r.status));
   const historyRequests = requests.filter((r) => ["completed", "cancelled"].includes(r.status));
 
   const displayRequests = activeTab === "active" ? activeRequests : historyRequests;
@@ -136,9 +136,9 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                       className={`flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] ${
                         req.status === "open"
                           ? "bg-roxou-text-muted/10 border-roxou-text-muted/20 text-roxou-text-muted"
-                          : req.status === "accepted"
+                          : req.status === "accepted" || req.status === "en_route"
                           ? "bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary shadow-[0_0_10px_rgba(124,58,237,0.1)]"
-                          : req.status === "in_progress"
+                          : req.status === "in_progress" || req.status === "arrived"
                           ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                           : req.status === "completed"
                           ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
@@ -147,14 +147,18 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                     >
                       <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
                         req.status === "open" ? "bg-roxou-text-muted" :
-                        req.status === "accepted" ? "bg-roxou-primary" :
-                        req.status === "in_progress" ? "bg-amber-500" :
+                        req.status === "accepted" || req.status === "en_route" ? "bg-roxou-primary" :
+                        req.status === "in_progress" || req.status === "arrived" ? "bg-amber-500" :
                         req.status === "completed" ? "bg-emerald-500" : "bg-red-500"
                       }`} />
                       {req.status === "open"
                         ? "Aberto"
                         : req.status === "accepted"
                         ? "Aceito"
+                        : req.status === "en_route"
+                        ? "A Caminho"
+                        : req.status === "arrived"
+                        ? "Motorista no Local"
                         : req.status === "in_progress"
                         ? "Em Andamento"
                         : req.status === "completed"
@@ -173,14 +177,14 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                     />
                   </div>
 
-                  {(req.status === "accepted" || req.status === "in_progress" || req.status === "completed") && req.driver && (
+                  {(req.status === "accepted" || req.status === "en_route" || req.status === "arrived" || req.status === "in_progress" || req.status === "completed") && req.driver && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       className={`mb-6 p-5 rounded-[24px] border flex items-center gap-5 relative z-10 overflow-hidden ${
-                        req.status === "in_progress"
+                        req.status === "in_progress" || req.status === "arrived"
                           ? "bg-amber-500/5 border-amber-500/10"
-                          : req.status === "accepted"
+                          : req.status === "accepted" || req.status === "en_route"
                           ? "bg-roxou-primary/5 border-roxou-primary/10"
                           : "bg-emerald-500/5 border-emerald-500/10"
                       }`}
@@ -213,9 +217,13 @@ export default function PassengerRequestList({ initialRequests, userId }: Passen
                         >
                           {req.status === "in_progress"
                             ? "Motorista levando você"
+                            : req.status === "arrived"
+                            ? "Motorista aguardando você"
+                            : req.status === "en_route"
+                            ? "Motorista a caminho"
                             : req.status === "completed"
                             ? "Corrida finalizada"
-                            : "Motorista a caminho"}
+                            : "Motorista aceitou seu pedido"}
                         </p>
                       </div>
                     </motion.div>

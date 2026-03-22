@@ -36,7 +36,14 @@ export default async function AdminDashboard() {
       email,
       avatar_url,
       updated_at,
-      drivers:drivers(verification_status)
+      drivers:drivers(
+        verification_status,
+        phone,
+        vehicle_model,
+        vehicle_plate,
+        admin_review_note,
+        created_at
+      )
     `)
     .eq("role", "driver")
     .order("updated_at", { ascending: false });
@@ -47,7 +54,12 @@ export default async function AdminDashboard() {
     email: p.email,
     avatar_url: p.avatar_url,
     verification_status: p.drivers?.[0]?.verification_status || "pending",
-    updated_at: p.updated_at
+    updated_at: p.updated_at,
+    phone: p.drivers?.[0]?.phone,
+    vehicle_model: p.drivers?.[0]?.vehicle_model,
+    vehicle_plate: p.drivers?.[0]?.vehicle_plate,
+    admin_review_note: p.drivers?.[0]?.admin_review_note,
+    created_at: p.drivers?.[0]?.created_at
   }));
 
   // Fetch recent reports

@@ -109,7 +109,7 @@ export default function ChatPage() {
     }
 
     setupChat();
-  }, [connectionId]);
+  }, [connectionId, router, supabase]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -177,9 +177,29 @@ export default function ChatPage() {
       <div className="bg-roxou-primary/10 border-b border-roxou-primary/20 p-4 px-6 space-y-4">
         <div className="flex items-center gap-3">
           <Info className="w-4 h-4 text-roxou-primary flex-shrink-0" />
-          <p className="text-[10px] text-roxou-text-muted leading-tight">
-            Viagem para: <span className="text-white font-bold">{connection.request.origin}</span>. Combine o valor e local exato aqui.
-          </p>
+          <div className="flex-grow">
+            <p className="text-[10px] text-roxou-text-muted leading-tight">
+              Viagem para: <span className="text-white font-bold">{connection.request.origin}</span>. Combine o valor e local exato aqui.
+            </p>
+            <div className="mt-1 flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                connection.request.status === 'en_route' ? 'bg-roxou-primary' :
+                connection.request.status === 'arrived' ? 'bg-amber-500' :
+                connection.request.status === 'in_progress' ? 'bg-roxou-secondary' :
+                'bg-roxou-text-muted'
+              }`} />
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/50">
+                Status: {
+                  connection.request.status === 'accepted' ? 'Aceito' :
+                  connection.request.status === 'en_route' ? 'Motorista a Caminho' :
+                  connection.request.status === 'arrived' ? 'Motorista no Local' :
+                  connection.request.status === 'in_progress' ? 'Em Andamento' :
+                  connection.request.status === 'completed' ? 'Finalizado' :
+                  connection.request.status
+                }
+              </span>
+            </div>
+          </div>
         </div>
         
         {currentUser.id === connection.driver_id && (

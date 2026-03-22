@@ -86,12 +86,16 @@ export default function DriverRequestList({
           <div className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest mb-2 inline-block ${
             req.status === 'open' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
             req.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' :
+            req.status === 'en_route' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
+            req.status === 'arrived' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
             req.status === 'in_progress' ? 'bg-roxou-secondary/20 text-roxou-secondary border border-roxou-secondary/30' :
             req.status === 'completed' ? 'bg-roxou-text-muted/20 text-roxou-text-muted border border-roxou-text-muted/30' :
             'bg-red-500/20 text-red-500 border border-red-500/30'
           }`}>
             {req.status === 'open' ? 'Aberto' : 
              req.status === 'accepted' ? 'Aceito' : 
+             req.status === 'en_route' ? 'A Caminho' :
+             req.status === 'arrived' ? 'No Local' :
              req.status === 'in_progress' ? 'Em Andamento' : 
              req.status === 'completed' ? 'Finalizado' : 'Cancelado'}
           </div>

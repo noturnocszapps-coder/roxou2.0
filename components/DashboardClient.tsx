@@ -201,11 +201,13 @@ export default function DashboardClient({ user, requests, connections }: { user:
                           <Shield className="w-3 h-3 text-roxou-primary" />
                         )}
                         <div className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
-                          conn.request.status === 'accepted' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
-                          conn.request.status === 'in_progress' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
+                          conn.request.status === 'accepted' || conn.request.status === 'en_route' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
+                          conn.request.status === 'in_progress' || conn.request.status === 'arrived' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
                           'bg-roxou-text-muted/20 text-roxou-text-muted border border-roxou-text-muted/30'
                         }`}>
                           {conn.request.status === 'accepted' ? 'Aceito' : 
+                           conn.request.status === 'en_route' ? 'A Caminho' :
+                           conn.request.status === 'arrived' ? 'No Local' :
                            conn.request.status === 'in_progress' ? 'Em Andamento' : 
                            conn.request.status === 'completed' ? 'Finalizado' : conn.request.status}
                         </div>

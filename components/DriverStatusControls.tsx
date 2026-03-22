@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Play, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { Play, CheckCircle2, Loader2, AlertCircle, Navigation, MapPin } from "lucide-react";
 
 interface DriverStatusControlsProps {
   requestId: string;
@@ -51,6 +51,28 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
       )}
 
       {currentStatus === "accepted" && (
+        <button
+          onClick={() => updateStatus("en_route")}
+          disabled={loading}
+          className="w-full py-4 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Navigation className="w-5 h-5" />}
+          Estou a Caminho
+        </button>
+      )}
+
+      {currentStatus === "en_route" && (
+        <button
+          onClick={() => updateStatus("arrived")}
+          disabled={loading}
+          className="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-amber-500/90 active:scale-95 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
+          Cheguei no Local
+        </button>
+      )}
+
+      {currentStatus === "arrived" && (
         <button
           onClick={() => updateStatus("in_progress")}
           disabled={loading}
