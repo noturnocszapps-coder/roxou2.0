@@ -54,42 +54,39 @@ export default function AdminDriverManagement({
   const fetchDrivers = async () => {
     setLoading(true);
 
-    const { data, error } = await supabase
+    const { data: profileRows, error: profileError } = await supabase
       .from("profiles")
-      .select(`
-        id,
-        full_name,
-        email,
-        avatar_url,
-        updated_at,
-        drivers:drivers(
-          verification_status,
-          phone,
-          vehicle_model,
-          vehicle_plate,
-          admin_review_note,
-          created_at
-        )
-      `)
+      .select("id, full_name, email, avatar_url, updated_at")
       .eq("role", "driver")
       .order("updated_at", { ascending: false });
 
-    console.log("ADMIN PROFILES+DRIVERS:", data, error);
+    const { data: driverRows, error: driverError } = await supabase
+      .from("drivers")
+      .select(
+        "user_id, verification_status, phone, vehicle_model, vehicle_plate, admin_review_note, created_at"
+      );
 
-    if (!error && data) {
-      const formattedDrivers = data.map((p: any) => ({
-        id: p.id,
-        full_name: p.full_name || "N/A",
-        email: p.email || "N/A",
-        avatar_url: p.avatar_url || "",
-        verification_status: p.drivers?.[0]?.verification_status || "pending",
-        updated_at: p.updated_at,
-        phone: p.drivers?.[0]?.phone || "N/A",
-        vehicle_model: p.drivers?.[0]?.vehicle_model || "N/A",
-        vehicle_plate: p.drivers?.[0]?.vehicle_plate || "N/A",
-        admin_review_note: p.drivers?.[0]?.admin_review_note || "",
-        created_at: p.drivers?.[0]?.created_at || p.updated_at,
-      }));
+    console.log("ADMIN PROFILE ROWS:", profileRows, profileError);
+    console.log("ADMIN DRIVER ROWS:", driverRows, driverError);
+
+    if (!profileError && !driverError && profileRows) {
+      const formattedDrivers = profileRows.map((p: any) => {
+        const driverMatch = driverRows?.find((d: any) => d.user_id === p.id);
+
+        return {
+          id: p.id,
+          full_name: p.full_name || "N/A",
+          email: p.email || "N/A",
+          avatar_url: p.avatar_url || "",
+          verification_status: driverMatch?.verification_status || "pending",
+          updated_at: p.updated_at,
+          phone: driverMatch?.phone || "N/A",
+          vehicle_model: driverMatch?.vehicle_model || "N/A",
+          vehicle_plate: driverMatch?.vehicle_plate || "N/A",
+          admin_review_note: driverMatch?.admin_review_note || "",
+          created_at: driverMatch?.created_at || p.updated_at,
+        };
+      });
 
       setDrivers(formattedDrivers);
     }
@@ -97,8 +94,6 @@ export default function AdminDriverManagement({
     setLoading(false);
   };
 
-  // FIX: carregar motoristas reais ao abrir o painel,
-  // mesmo quando initialDrivers vier vazio
   useEffect(() => {
     fetchDrivers();
   }, []);
@@ -121,15 +116,17 @@ export default function AdminDriverManagement({
   ) => {
     setActionLoading(driverId);
 
-    const { error } = await supabase.from("drivers").upsert(
-      {
-        user_id: driverId,
-        verification_status: status,
-        admin_review_note: note,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
+    const { error } = await supabase
+      .from("drivers")
+      .upsert(
+        {
+          user_id: driverId,
+          verification_status: status,
+          admin_review_note: note,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
 
     if (!error) {
       await fetchDrivers();
@@ -155,14 +152,16 @@ export default function AdminDriverManagement({
 
     setActionLoading("bulk");
 
-    const { error } = await supabase.from("drivers").upsert(
-      driversToUpdate.map((id) => ({
-        user_id: id,
-        verification_status: status,
-        updated_at: new Date().toISOString(),
-      })),
-      { onConflict: "user_id" }
-    );
+    const { error } = await supabase
+      .from("drivers")
+      .upsert(
+        driversToUpdate.map((id) => ({
+          user_id: id,
+          verification_status: status,
+          updated_at: new Date().toISOString(),
+        })),
+        { onConflict: "user_id" }
+      );
 
     if (!error) {
       await fetchDrivers();
@@ -261,7 +260,7 @@ export default function AdminDriverManagement({
               <span
                 className={`px-2 py-0.5 rounded-lg text-[9px] ${
                   filter === tab.id
-                    ? tab.bg + " " + tab.color
+                    ? `${tab.bg} ${tab.color}`
                     : "bg-roxou-border text-roxou-text-muted"
                 }`}
               >
