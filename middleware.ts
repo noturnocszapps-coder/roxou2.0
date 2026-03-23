@@ -49,12 +49,13 @@ export async function middleware(request: NextRequest) {
   // 2. Driver Rule
   else if (role === "driver") {
     // Fetch driver record for verification status - this is the ONLY source of truth for approval
-    const { data: driver } = await supabase
+    const { data: drivers } = await supabase
       .from("drivers")
       .select("verification_status")
       .eq("user_id", user.id)
-      .maybeSingle();
+      .order("created_at", { ascending: false });
 
+    const driver = drivers && drivers.length > 0 ? drivers[0] : null;
     const verificationStatus = driver?.verification_status;
     const isApproved = verificationStatus === "approved";
 

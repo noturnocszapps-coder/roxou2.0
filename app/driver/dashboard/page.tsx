@@ -19,31 +19,50 @@ export default async function DriverDashboard() {
   }
 
   // Fetch driver profile
-  const { data: profile, error: profileError } = await supabase
+  const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("id, role")
-    .eq("id", user.id)
-    .single();
+    .eq("id", user.id);
+
+  const profile = profiles && profiles.length > 0 ? profiles[0] : null;
 
   // Fetch driver record for verification status - this is the ONLY source of truth for approval
-  const { data: driver, error: driverError } = await supabase
+  const { data: drivers, error: driverError } = await supabase
     .from("drivers")
     .select("user_id, verification_status")
     .eq("user_id", user.id)
-    .maybeSingle();
+    .order("created_at", { ascending: false });
+
+  const driver = drivers && drivers.length > 0 ? drivers[0] : null;
 
   const role = profile?.role;
   const verificationStatus = driver?.verification_status;
 
+  // DEBUG DATA
+  const debugData = {
+    authUserId: user.id,
+    authEmail: user.email,
+    profileId: profile?.id,
+    profileRole: role,
+    driverUserId: driver?.user_id,
+    verificationStatus: verificationStatus,
+    profileError: profileError?.message,
+    driverError: driverError?.message,
+    profilesCount: profiles?.length || 0,
+    driversCount: drivers?.length || 0,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    timestamp: new Date().toISOString()
+  };
+
   // 1. if not driver -> redirect("/")
   if (role !== "driver") {
-    console.log("Not a driver role on dashboard. Redirecting to home.");
+    console.log("Not a driver role on dashboard. Redirecting to home.", debugData);
     redirect("/");
   }
 
   // 2. if not approved -> redirect("/driver/onboarding")
   if (verificationStatus !== "approved") {
-    console.log("Non-approved driver detected on dashboard. Forcing redirect to onboarding.");
+    console.log("Non-approved driver detected on dashboard. Forcing redirect to onboarding.", debugData);
     redirect("/driver/onboarding");
   }
 
