@@ -19,16 +19,16 @@ export default async function DriverDashboard() {
   }
 
   // Fetch driver profile
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role")
+    .select("id, role")
     .eq("id", user.id)
     .single();
 
   // Fetch driver record for verification status - this is the ONLY source of truth for approval
-  const { data: driver } = await supabase
+  const { data: driver, error: driverError } = await supabase
     .from("drivers")
-    .select("verification_status")
+    .select("user_id, verification_status")
     .eq("user_id", user.id)
     .maybeSingle();
 

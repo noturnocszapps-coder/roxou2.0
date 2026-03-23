@@ -13,16 +13,16 @@ export default async function DriverOnboardingPage() {
   }
 
   // 1. read profile role from profiles by id
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role")
+    .select("id, role")
     .eq("id", user.id)
     .single();
 
   // 2. read driver record from drivers by user_id
-  const { data: driver } = await supabase
+  const { data: driver, error: driverError } = await supabase
     .from("drivers")
-    .select("verification_status")
+    .select("user_id, verification_status")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -45,10 +45,12 @@ export default async function DriverOnboardingPage() {
   // - otherwise render the pending screen
   // This includes "pending", "rejected", or even if the drivers row is missing (null)
   return (
-    <DriverOnboardingStatus 
-      role={role} 
-      driverFound={!!driver} 
-      verificationStatus={verificationStatus} 
-    />
+    <div className="min-h-screen bg-roxou-bg">
+      <DriverOnboardingStatus 
+        role={role} 
+        driverFound={!!driver} 
+        verificationStatus={verificationStatus} 
+      />
+    </div>
   );
 }
