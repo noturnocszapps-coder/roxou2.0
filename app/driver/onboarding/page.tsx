@@ -29,6 +29,11 @@ export default async function DriverOnboardingPage() {
 
   const driver = drivers && drivers.length > 0 ? drivers[0] : null;
 
+  // RAW TABLE TEST (No Filter)
+  const { data: testDrivers, error: testError } = await supabase
+    .from("public.drivers")
+    .select("*");
+
   const role = profile?.role;
   const verificationStatus = driver?.verification_status;
 
@@ -100,8 +105,15 @@ export default async function DriverOnboardingPage() {
           </div>
         )}
         <div className="mt-4 pt-4 border-t border-green-900">
-          <p className="text-white font-bold">RAW DRIVERS DATA:</p>
-          <pre className="mt-2">{JSON.stringify(drivers, null, 2)}</pre>
+          <p className="text-white font-bold underline mb-2">RAW TABLE TEST (No Filter)</p>
+          <p><span className="text-roxou-primary">TEST_QUERY_COUNT:</span> {testDrivers?.length || 0}</p>
+          <p><span className="text-roxou-primary">TEST_QUERY_ERROR:</span> {JSON.stringify(testError)}</p>
+          <p className="text-white text-xs mt-2">TEST_QUERY_DATA:</p>
+          <pre className="mt-1 text-[10px] text-gray-400 max-h-40 overflow-auto">{JSON.stringify(testDrivers, null, 2)}</pre>
+        </div>
+        <div className="mt-4 pt-4 border-t border-green-900">
+          <p className="text-white font-bold">RAW DRIVERS DATA (Filtered by User ID):</p>
+          <pre className="mt-2 text-[10px]">{JSON.stringify(drivers, null, 2)}</pre>
         </div>
       </div>
 
