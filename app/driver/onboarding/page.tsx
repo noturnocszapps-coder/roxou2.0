@@ -72,6 +72,7 @@ export default async function DriverOnboardingPage() {
   // This includes "pending", "rejected", or even if the drivers row is missing (null)
   return (
     <div className="min-h-screen bg-roxou-bg">
+      <div className="bg-white text-black p-1 text-[10px] font-mono text-center">BUILD_MARKER: driver-fix-v2</div>
       {/* HARD DEBUG SECTION */}
       <div className="bg-black text-green-500 p-6 font-mono text-xs border-b-4 border-roxou-primary overflow-auto">
         <h2 className="text-lg font-bold mb-4 text-white underline">HARD RUNTIME DEBUG</h2>
