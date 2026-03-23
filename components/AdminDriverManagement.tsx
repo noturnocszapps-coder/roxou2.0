@@ -11,7 +11,19 @@ import {
   Filter,
   CheckSquare,
   XSquare,
-  Loader2
+  Loader2,
+  Search,
+  Phone,
+  Mail,
+  Car,
+  Hash,
+  Calendar,
+  MoreVertical,
+  AlertCircle,
+  ShieldCheck,
+  UserCheck,
+  UserX,
+  UserMinus
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,12 +49,20 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const [filter, setFilter] = useState<string>("pending");
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredDrivers = drivers.filter(d => d.verification_status === filter);
+  const filteredDrivers = drivers.filter(d => {
+    const matchesFilter = d.verification_status === filter;
+    const matchesSearch = d.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         d.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (d.vehicle_plate && d.vehicle_plate.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesFilter && matchesSearch;
+  });
 
   const fetchDrivers = async () => {
     setLoading(true);
     // Fetch from profiles table and join with drivers
+    // CRITICAL: Using .from("drivers") as requested
     const { data, error } = await supabase
       .from("profiles")
       .select(`
@@ -84,6 +104,7 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
 
   const handleUpdateStatus = async (driverId: string, status: string, note?: string) => {
     setActionLoading(driverId);
+    // CRITICAL: Using .from("drivers") as requested
     const { error } = await supabase
       .from("drivers")
       .upsert({
@@ -109,6 +130,7 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
     }
 
     setActionLoading("bulk");
+    // CRITICAL: Using .from("drivers") as requested
     const { error } = await supabase
       .from("drivers")
       .upsert(driversToUpdate.map(id => ({
@@ -129,213 +151,255 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const approvedCount = drivers.filter(d => d.verification_status === 'approved').length;
   const rejectedCount = drivers.filter(d => d.verification_status === 'rejected').length;
 
+  const tabs = [
+    { id: "pending", label: "Pendentes", count: pendingCount, icon: Clock, color: "text-roxou-primary", bg: "bg-roxou-primary/10" },
+    { id: "in_review", label: "Em Análise", count: inReviewCount, icon: AlertCircle, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { id: "approved", label: "Aprovados", count: approvedCount, icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { id: "rejected", label: "Rejeitados", count: rejectedCount, icon: UserX, color: "text-red-500", bg: "bg-red-500/10" },
+  ];
+
   return (
-    <section className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-        <h3 className="text-xl sm:text-2xl font-display font-bold flex items-center gap-3">
-          <Users className="w-6 h-6 sm:w-7 sm:h-7 text-roxou-primary" />
-          Gestão de Motoristas
-        </h3>
+    <section className="space-y-8">
+      {/* Header & Search */}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h3 className="text-2xl font-display font-black flex items-center gap-3 text-white">
+            <Users className="w-8 h-8 text-roxou-primary" />
+            Gestão de Motoristas
+          </h3>
+          
+          <div className="relative group w-full sm:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-roxou-text-muted group-focus-within:text-roxou-primary transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Buscar motorista..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-2xl bg-roxou-surface border border-roxou-border focus:border-roxou-primary outline-none text-sm text-white transition-all placeholder:text-roxou-text-muted/30"
+            />
+          </div>
+        </div>
         
-        <div className="flex items-center gap-1 sm:gap-2 bg-roxou-surface p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-roxou-border shadow-inner overflow-x-auto scrollbar-hide">
-          <button 
-            onClick={() => setFilter("pending")}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${filter === 'pending' ? 'bg-roxou-primary text-white shadow-lg shadow-roxou-primary/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
-          >
-            Pendentes
-            <span className={`px-1 sm:px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] ${filter === 'pending' ? 'bg-white text-roxou-primary' : 'bg-roxou-border text-roxou-text-muted'}`}>
-              {pendingCount}
-            </span>
-          </button>
-          <button 
-            onClick={() => setFilter("in_review")}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${filter === 'in_review' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
-          >
-            Em Análise
-            <span className={`px-1 sm:px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] ${filter === 'in_review' ? 'bg-white text-amber-500' : 'bg-roxou-border text-roxou-text-muted'}`}>
-              {inReviewCount}
-            </span>
-          </button>
-          <button 
-            onClick={() => setFilter("approved")}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${filter === 'approved' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
-          >
-            Aprovados
-            <span className={`px-1 sm:px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] ${filter === 'approved' ? 'bg-white text-emerald-500' : 'bg-roxou-border text-roxou-text-muted'}`}>
-              {approvedCount}
-            </span>
-          </button>
-          <button 
-            onClick={() => setFilter("rejected")}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${filter === 'rejected' ? 'bg-red-500 text-white shadow-lg shadow-red-500/40 scale-105' : 'text-roxou-text-muted hover:text-white hover:bg-white/5'}`}
-          >
-            Rejeitados
-            <span className={`px-1 sm:px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] ${filter === 'rejected' ? 'bg-white text-red-500' : 'bg-roxou-border text-roxou-text-muted'}`}>
-              {rejectedCount}
-            </span>
-          </button>
+        {/* Professional Tabs */}
+        <div className="flex items-center gap-1 p-1.5 rounded-[24px] bg-roxou-surface border border-roxou-border shadow-2xl overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => (
+            <button 
+              key={tab.id}
+              onClick={() => setFilter(tab.id)}
+              className={`flex-1 min-w-[120px] px-4 py-3 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
+                filter === tab.id 
+                  ? 'bg-roxou-bg text-white shadow-xl border border-roxou-border/50 scale-[1.02]' 
+                  : 'text-roxou-text-muted hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <tab.icon className={`w-3.5 h-3.5 ${filter === tab.id ? tab.color : 'text-roxou-text-muted'}`} />
+              {tab.label}
+              <span className={`px-2 py-0.5 rounded-lg text-[9px] ${
+                filter === tab.id ? tab.bg + ' ' + tab.color : 'bg-roxou-border text-roxou-text-muted'
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Bulk Actions */}
       {filteredDrivers.length > 0 && filter === "pending" && (
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 p-4 rounded-2xl sm:rounded-3xl bg-roxou-primary/5 border border-roxou-primary/10 animate-in fade-in slide-in-from-top-2">
-          <p className="text-[10px] sm:text-xs font-bold text-roxou-primary uppercase tracking-widest flex-grow sm:ml-2">Ações em Massa ({filteredDrivers.length})</p>
+        <div className="flex flex-col sm:flex-row items-center gap-4 p-5 rounded-[32px] bg-roxou-primary/5 border border-roxou-primary/10 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3 flex-grow">
+            <div className="w-10 h-10 rounded-full bg-roxou-primary/20 flex items-center justify-center">
+              <CheckSquare className="w-5 h-5 text-roxou-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-roxou-primary uppercase tracking-widest">Ações em Massa</p>
+              <p className="text-xs text-roxou-text-muted font-medium">{filteredDrivers.length} motoristas selecionados</p>
+            </div>
+          </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button 
               disabled={actionLoading !== null}
               onClick={() => handleBulkAction("approved")}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-green-500 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-tighter flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50"
+              className="flex-1 sm:flex-none px-6 py-3 rounded-2xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-emerald-500/20"
             >
-              {actionLoading === "bulk" ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckSquare className="w-3 h-3" />}
+              {actionLoading === "bulk" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
               Aprovar Todos
             </button>
             <button 
               disabled={actionLoading !== null}
               onClick={() => handleBulkAction("rejected")}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-red-500 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-tighter flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50"
+              className="flex-1 sm:flex-none px-6 py-3 rounded-2xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-red-500/20"
             >
-              {actionLoading === "bulk" ? <Loader2 className="w-3 h-3 animate-spin" /> : <XSquare className="w-3 h-3" />}
+              {actionLoading === "bulk" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserX className="w-3.5 h-3.5" />}
               Rejeitar Todos
             </button>
           </div>
         </div>
       )}
 
-      <div className="space-y-3 sm:space-y-4">
+      {/* Driver List */}
+      <div className="space-y-6">
         {loading ? (
-          <div className="flex items-center justify-center py-12 sm:py-20">
-            <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-roxou-primary animate-spin" />
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <Loader2 className="w-12 h-12 text-roxou-primary animate-spin" />
+            <p className="text-xs font-black text-roxou-primary uppercase tracking-widest animate-pulse">Sincronizando dados...</p>
           </div>
         ) : filteredDrivers.length > 0 ? (
           filteredDrivers.map((driver) => (
             <div 
               key={driver.id}
-              className="p-5 sm:p-8 rounded-[32px] sm:rounded-[48px] bg-roxou-surface border border-roxou-border flex flex-col gap-6 group hover:border-roxou-primary/40 transition-all hover:shadow-2xl hover:shadow-roxou-primary/5"
+              className="group relative rounded-[40px] bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary/40 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(157,78,221,0.1)]"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="flex items-center gap-4 sm:gap-6">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-[32px] bg-roxou-bg border border-roxou-border overflow-hidden violet-glow">
-                    <img 
-                      src={driver.avatar_url || `https://ui-avatars.com/api/?name=${driver.full_name}`} 
-                      alt={driver.full_name} 
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-black text-xl sm:text-2xl leading-tight text-white">{driver.full_name}</h4>
-                    <p className="text-xs sm:text-sm text-roxou-text-muted mb-2">{driver.email}</p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-[9px] sm:text-[10px] uppercase font-black tracking-widest border ${
-                        driver.verification_status === 'approved' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 
-                        driver.verification_status === 'rejected' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 
-                        driver.verification_status === 'in_review' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
-                        'bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary'
+              {/* Card Content */}
+              <div className="p-6 sm:p-10 space-y-8">
+                {/* Top Section: Profile Info */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div className="flex items-center gap-5 sm:gap-8">
+                    <div className="relative">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[32px] bg-roxou-bg border border-roxou-border overflow-hidden violet-glow relative z-10">
+                        <img 
+                          src={driver.avatar_url || `https://ui-avatars.com/api/?name=${driver.full_name}`} 
+                          alt={driver.full_name} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-xl border-2 border-roxou-surface z-20 flex items-center justify-center shadow-lg ${
+                        driver.verification_status === 'approved' ? 'bg-emerald-500' : 
+                        driver.verification_status === 'rejected' ? 'bg-red-500' : 
+                        driver.verification_status === 'in_review' ? 'bg-amber-500' :
+                        'bg-roxou-primary'
                       }`}>
-                        {driver.verification_status === 'approved' ? 'Aprovado' : 
-                         driver.verification_status === 'rejected' ? 'Rejeitado' : 
-                         driver.verification_status === 'in_review' ? 'Em Análise' :
-                         'Pendente'}
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-roxou-bg border border-roxou-border text-[9px] sm:text-[10px] text-roxou-text-muted font-bold uppercase tracking-widest">
-                        Desde {new Date(driver.created_at || driver.updated_at).toLocaleDateString('pt-BR')}
-                      </span>
+                        {driver.verification_status === 'approved' ? <ShieldCheck className="w-4 h-4 text-white" /> : 
+                         driver.verification_status === 'rejected' ? <UserX className="w-4 h-4 text-white" /> : 
+                         driver.verification_status === 'in_review' ? <AlertCircle className="w-4 h-4 text-white" /> :
+                         <Clock className="w-4 h-4 text-white" />}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <h4 className="font-display font-black text-2xl sm:text-3xl leading-tight text-white tracking-tight">{driver.full_name}</h4>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-roxou-text-muted">
+                          <Mail className="w-3.5 h-3.5" />
+                          <span className="text-xs font-medium">{driver.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-roxou-text-muted">
+                          <Phone className="w-3.5 h-3.5" />
+                          <span className="text-xs font-medium">{driver.phone || "Não informado"}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Link 
+                      href={`/admin/drivers/${driver.id}`}
+                      className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-roxou-bg border border-roxou-border flex items-center justify-center gap-3 hover:bg-roxou-primary hover:text-white transition-all group-hover:scale-105 text-[10px] font-black uppercase tracking-widest shadow-xl"
+                    >
+                      Dossiê Completo
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <Link 
-                    href={`/admin/drivers/${driver.id}`}
-                    className="flex-1 sm:flex-none px-6 py-3 rounded-2xl bg-roxou-bg border border-roxou-border flex items-center justify-center gap-2 hover:bg-roxou-primary hover:text-white transition-all group-hover:scale-105 text-xs font-black uppercase tracking-widest"
-                  >
-                    Ver Detalhes
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-roxou-bg/50 border border-roxou-border/50">
-                <div className="space-y-1">
-                  <p className="text-[9px] text-roxou-text-muted uppercase font-black tracking-widest">Telefone</p>
-                  <p className="text-sm font-bold text-white/90">{driver.phone || "Não informado"}</p>
+                {/* Middle Section: Vehicle & Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-5 rounded-3xl bg-roxou-bg/40 border border-roxou-border/50 space-y-3 group/item hover:border-roxou-primary/30 transition-colors">
+                    <div className="flex items-center gap-2 text-roxou-text-muted">
+                      <Car className="w-3.5 h-3.5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Veículo</span>
+                    </div>
+                    <p className="text-base font-bold text-white/90">{driver.vehicle_model || "Não informado"}</p>
+                  </div>
+                  
+                  <div className="p-5 rounded-3xl bg-roxou-bg/40 border border-roxou-border/50 space-y-3 group/item hover:border-roxou-primary/30 transition-colors">
+                    <div className="flex items-center gap-2 text-roxou-text-muted">
+                      <Hash className="w-3.5 h-3.5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Placa</span>
+                    </div>
+                    <p className="text-base font-bold text-white/90 uppercase tracking-wider">{driver.vehicle_plate || "N/A"}</p>
+                  </div>
+                  
+                  <div className="p-5 rounded-3xl bg-roxou-bg/40 border border-roxou-border/50 space-y-3 group/item hover:border-roxou-primary/30 transition-colors">
+                    <div className="flex items-center gap-2 text-roxou-text-muted">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Cadastro</span>
+                    </div>
+                    <p className="text-base font-bold text-white/90">
+                      {new Date(driver.created_at || driver.updated_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[9px] text-roxou-text-muted uppercase font-black tracking-widest">Veículo</p>
-                  <p className="text-sm font-bold text-white/90">{driver.vehicle_model || "Não informado"}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[9px] text-roxou-text-muted uppercase font-black tracking-widest">Placa</p>
-                  <p className="text-sm font-bold text-white/90 uppercase">{driver.vehicle_plate || "N/A"}</p>
-                </div>
-              </div>
 
-              {driver.admin_review_note && (
-                <div className="p-4 rounded-2xl bg-roxou-primary/5 border border-roxou-primary/10 italic text-xs text-roxou-text-muted/80">
-                  &quot;{driver.admin_review_note}&quot;
-                </div>
-              )}
-
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex-grow flex items-center gap-2 px-4 py-2 rounded-2xl bg-roxou-bg border border-roxou-border">
-                  <Filter className="w-4 h-4 text-roxou-text-muted" />
-                  <input 
-                    type="text" 
-                    placeholder="Nota de revisão (opcional)..."
-                    className="bg-transparent border-none outline-none text-xs w-full text-white placeholder:text-roxou-text-muted/30"
-                    onBlur={(e) => {
-                      if (e.target.value !== driver.admin_review_note) {
-                        handleUpdateStatus(driver.id, driver.verification_status, e.target.value);
-                      }
-                    }}
-                    defaultValue={driver.admin_review_note}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <button 
-                    disabled={actionLoading === driver.id}
-                    onClick={() => handleUpdateStatus(driver.id, "approved")}
-                    className="flex-1 px-4 py-3 rounded-2xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all disabled:opacity-50"
-                  >
-                    {actionLoading === driver.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                    Aprovar
-                  </button>
-                  <button 
-                    disabled={actionLoading === driver.id}
-                    onClick={() => handleUpdateStatus(driver.id, "in_review")}
-                    className="flex-1 px-4 py-3 rounded-2xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-600 transition-all disabled:opacity-50"
-                  >
-                    {actionLoading === driver.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Clock className="w-3 h-3" />}
-                    Análise
-                  </button>
-                  <button 
-                    disabled={actionLoading === driver.id}
-                    onClick={() => handleUpdateStatus(driver.id, "rejected")}
-                    className="flex-1 px-4 py-3 rounded-2xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-600 transition-all disabled:opacity-50"
-                  >
-                    {actionLoading === driver.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
-                    Rejeitar
-                  </button>
+                {/* Bottom Section: Moderation Actions */}
+                <div className="pt-6 border-t border-roxou-border/50 space-y-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                    <div className="flex-grow relative group/input">
+                      <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-roxou-text-muted group-focus-within/input:text-roxou-primary transition-colors" />
+                      <input 
+                        type="text" 
+                        placeholder="Adicionar nota de revisão interna..."
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-roxou-bg border border-roxou-border outline-none text-xs text-white placeholder:text-roxou-text-muted/30 focus:border-roxou-primary transition-all"
+                        onBlur={(e) => {
+                          if (e.target.value !== driver.admin_review_note) {
+                            handleUpdateStatus(driver.id, driver.verification_status, e.target.value);
+                          }
+                        }}
+                        defaultValue={driver.admin_review_note}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <button 
+                        disabled={actionLoading === driver.id}
+                        onClick={() => handleUpdateStatus(driver.id, "approved")}
+                        className="flex-1 sm:w-32 px-4 py-4 rounded-2xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all disabled:opacity-50 shadow-lg shadow-emerald-500/20 active:scale-95"
+                      >
+                        {actionLoading === driver.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
+                        Aprovar
+                      </button>
+                      
+                      <button 
+                        disabled={actionLoading === driver.id}
+                        onClick={() => handleUpdateStatus(driver.id, "in_review")}
+                        className="flex-1 sm:w-32 px-4 py-4 rounded-2xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-600 transition-all disabled:opacity-50 shadow-lg shadow-amber-500/20 active:scale-95"
+                      >
+                        {actionLoading === driver.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Clock className="w-4 h-4" />}
+                        Análise
+                      </button>
+                      
+                      <button 
+                        disabled={actionLoading === driver.id}
+                        onClick={() => handleUpdateStatus(driver.id, "rejected")}
+                        className="flex-1 sm:w-32 px-4 py-4 rounded-2xl bg-red-500 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-600 transition-all disabled:opacity-50 shadow-lg shadow-red-500/20 active:scale-95"
+                      >
+                        {actionLoading === driver.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserX className="w-4 h-4" />}
+                        Rejeitar
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-12 sm:py-20 p-6 sm:p-10 rounded-[32px] sm:rounded-[40px] border-2 border-dashed border-roxou-border bg-roxou-surface/20">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-roxou-surface rounded-full flex items-center justify-center mx-auto mb-4 border border-roxou-border">
-              {filter === 'pending' ? <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-roxou-text-muted/30" /> : 
-               filter === 'approved' ? <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-roxou-text-muted/30" /> :
-               <XCircle className="w-6 h-6 sm:w-8 sm:h-8 text-roxou-text-muted/30" />}
+          <div className="text-center py-24 sm:py-32 p-10 rounded-[48px] border-2 border-dashed border-roxou-border bg-roxou-surface/20 animate-in fade-in zoom-in-95 duration-700">
+            <div className="w-20 h-20 bg-roxou-surface rounded-[28px] flex items-center justify-center mx-auto mb-6 border border-roxou-border shadow-2xl">
+              {filter === 'pending' ? <Clock className="w-10 h-10 text-roxou-text-muted/30" /> : 
+               filter === 'approved' ? <ShieldCheck className="w-10 h-10 text-roxou-text-muted/30" /> :
+               filter === 'in_review' ? <AlertCircle className="w-10 h-10 text-roxou-text-muted/30" /> :
+               <UserX className="w-10 h-10 text-roxou-text-muted/30" />}
             </div>
-            <h4 className="font-bold text-roxou-text-muted mb-1 text-sm sm:text-base">
-              {filter === 'pending' ? 'Nenhum motorista pendente' : 
-               filter === 'approved' ? 'Nenhum aprovado' : 
-               'Nenhum rejeitado'}
+            <h4 className="font-display font-black text-white text-2xl mb-2 tracking-tight">
+              {filter === 'pending' ? 'Fila de Espera Vazia' : 
+               filter === 'approved' ? 'Nenhum Motorista Ativo' : 
+               filter === 'in_review' ? 'Nada em Análise' :
+               'Lista Negra Vazia'}
             </h4>
-            <p className="text-[10px] sm:text-xs text-roxou-text-muted/60">
-              {filter === 'pending' ? 'Quando novos cadastros chegarem, aparecerão aqui.' : 
-               'Não encontramos motoristas com este status.'}
+            <p className="text-sm text-roxou-text-muted/60 max-w-xs mx-auto font-medium">
+              {filter === 'pending' ? 'Quando novos motoristas se cadastrarem, eles aparecerão aqui para sua revisão.' : 
+               'Não encontramos registros com este status no momento.'}
             </p>
           </div>
         )}

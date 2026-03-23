@@ -38,31 +38,13 @@ export default async function DriverDashboard() {
   const role = profile?.role;
   const verificationStatus = driver?.verification_status;
 
-  // DEBUG DATA
-  const debugData = {
-    authUserId: user.id,
-    authEmail: user.email,
-    profileId: profile?.id,
-    profileRole: role,
-    driverUserId: driver?.user_id,
-    verificationStatus: verificationStatus,
-    profileError: profileError?.message,
-    driverError: driverError?.message,
-    profilesCount: profiles?.length || 0,
-    driversCount: drivers?.length || 0,
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    timestamp: new Date().toISOString()
-  };
-
   // 1. if not driver -> redirect("/")
   if (role !== "driver") {
-    console.log("Not a driver role on dashboard. Redirecting to home.", debugData);
     redirect("/");
   }
 
   // 2. if not approved -> redirect("/driver/onboarding")
   if (verificationStatus !== "approved") {
-    console.log("Non-approved driver detected on dashboard. Forcing redirect to onboarding.", debugData);
     redirect("/driver/onboarding");
   }
 
