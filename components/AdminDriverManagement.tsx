@@ -46,25 +46,31 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const supabase = createClient();
   const router = useRouter();
   
-  // Normalize incoming data
-  const drivers = (initialDrivers || []).map((p: any) => ({
-    id: p.id,
-    full_name: p.full_name || "N/A",
-    email: p.email || "N/A",
-    avatar_url: p.avatar_url || "",
-    verification_status: p.drivers?.[0]?.verification_status || "pending",
-    updated_at: p.updated_at,
-    phone: p.drivers?.[0]?.phone || "N/A",
-    vehicle_model: p.drivers?.[0]?.vehicle_model || "N/A",
-    vehicle_plate: p.drivers?.[0]?.vehicle_plate || "N/A",
-    admin_review_note: p.drivers?.[0]?.admin_review_note || "",
-    created_at: p.drivers?.[0]?.created_at || p.updated_at
-  }));
+  // Normalize defensively
+  const normalizedDrivers = (initialDrivers || []).map((p: any) => {
+    const driverData = Array.isArray(p.drivers)
+      ? p.drivers[0]
+      : p.drivers || null;
 
-  const pendingCount = drivers.filter(d => d.verification_status === 'pending').length;
-  const inReviewCount = drivers.filter(d => d.verification_status === 'in_review').length;
-  const approvedCount = drivers.filter(d => d.verification_status === 'approved').length;
-  const rejectedCount = drivers.filter(d => d.verification_status === 'rejected').length;
+    return {
+      id: p.id,
+      full_name: p.full_name || "N/A",
+      email: p.email || "N/A",
+      avatar_url: p.avatar_url || "",
+      verification_status: driverData?.verification_status || "pending",
+      updated_at: p.updated_at,
+      phone: driverData?.phone || "N/A",
+      vehicle_model: driverData?.vehicle_model || "N/A",
+      vehicle_plate: driverData?.vehicle_plate || "N/A",
+      admin_review_note: driverData?.admin_review_note || "",
+      created_at: driverData?.created_at || p.updated_at
+    };
+  });
+
+  const pendingCount = normalizedDrivers.filter(d => d.verification_status === 'pending').length;
+  const inReviewCount = normalizedDrivers.filter(d => d.verification_status === 'in_review').length;
+  const approvedCount = normalizedDrivers.filter(d => d.verification_status === 'approved').length;
+  const rejectedCount = normalizedDrivers.filter(d => d.verification_status === 'rejected').length;
 
   const defaultFilter =
     pendingCount > 0 ? "pending" :
@@ -76,7 +82,7 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredDrivers = drivers.filter(d => {
+  const filteredDrivers = normalizedDrivers.filter(d => {
     const matchesFilter = d.verification_status === filter;
     const matchesSearch = d.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          d.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -152,6 +158,20 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 rounded-2xl bg-roxou-surface border border-roxou-border focus:border-roxou-primary outline-none text-sm text-white transition-all placeholder:text-roxou-text-muted/30"
             />
+          </div>
+        </div>
+
+        {/* DEBUG BLOCK */}
+        <div className="p-4 bg-black/50 border border-roxou-border rounded-2xl text-[10px] font-mono text-roxou-text-muted overflow-auto max-h-60 space-y-2">
+          <p>RAW_INITIAL_DRIVERS_COUNT: {initialDrivers?.length || 0}</p>
+          <p>NORMALIZED_DRIVERS_COUNT: {normalizedDrivers.length}</p>
+          <div>
+            <p>NORMALIZED_STATUSES_JSON:</p>
+            <pre>{JSON.stringify(normalizedDrivers.map(d => ({ id: d.id, status: d.verification_status })), null, 2)}</pre>
+          </div>
+          <div>
+            <p>RAW_INITIAL_DRIVERS_JSON:</p>
+            <pre>{JSON.stringify(initialDrivers, null, 2)}</pre>
           </div>
         </div>
         
