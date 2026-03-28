@@ -319,7 +319,9 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                       <span className="text-[9px] font-black uppercase tracking-widest">Cadastro</span>
                     </div>
                     <p className="text-base font-bold text-white/90">
-                      {new Date(driver.created_at || driver.updated_at).toLocaleDateString('pt-BR')}
+                      {driver.created_at || driver.updated_at 
+                        ? new Date(driver.created_at || driver.updated_at).toLocaleDateString('pt-BR')
+                        : "Sem data"}
                     </p>
                   </div>
                 </div>
