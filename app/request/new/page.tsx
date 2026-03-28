@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import RoxouDateTimePicker from "@/components/RoxouDateTimePicker";
+import AddressSearch from "@/components/AddressSearch";
 
 export default function NewRequestPage() {
   return (
@@ -54,6 +55,8 @@ function NewRequestForm() {
     is_return: false,
     accepted_terms: false,
   });
+
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   // Event Context State
   const [eventContext, setEventContext] = useState<{
@@ -248,38 +251,21 @@ function NewRequestForm() {
           <p className="text-roxou-text-muted font-medium">Preencha os detalhes e encontre um motorista agora.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-10">
           {/* Destination */}
-          <div className="space-y-3 group">
-            <div className="flex items-center justify-between px-1">
-              <label className="text-[10px] text-roxou-primary uppercase font-black tracking-[0.25em] opacity-80 group-focus-within:opacity-100 transition-opacity">Destino Final</label>
-              {eventContext.nome && (
-                <span className="text-[9px] font-black bg-roxou-primary/20 text-roxou-primary px-2 py-0.5 rounded-full uppercase tracking-widest border border-roxou-primary/30">Evento Sugerido</span>
-              )}
-            </div>
-            <div className="relative">
-              <input 
-                required
-                type="text"
-                placeholder="Ex: Arena Club, Bar do Juarez..."
-                className="w-full p-6 rounded-[32px] bg-roxou-surface/50 border border-roxou-border focus:border-roxou-primary focus:ring-1 focus:ring-roxou-primary/50 outline-none transition-all placeholder:text-roxou-text-muted/20 text-lg font-bold text-white shadow-inner"
-                value={formData.origin}
-                onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-              />
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-2xl bg-roxou-primary/10 flex items-center justify-center border border-roxou-primary/20">
-                <MapPin className="w-5 h-5 text-roxou-primary" />
-              </div>
-            </div>
-          </div>
+          <AddressSearch 
+            value={formData.origin}
+            onChange={(val) => setFormData({ ...formData, origin: val })}
+            onOpenChange={setIsPickerOpen}
+            isEventPrefilled={!!eventContext.nome}
+          />
 
           {/* Departure Time */}
-          <div className="space-y-3">
-            <label className="text-[10px] text-roxou-primary uppercase font-black tracking-[0.25em] ml-1 opacity-80">Horário de Partida</label>
-            <RoxouDateTimePicker 
-              value={formData.departure_time}
-              onChange={(val) => setFormData({ ...formData, departure_time: val })}
-            />
-          </div>
+          <RoxouDateTimePicker 
+            value={formData.departure_time}
+            onChange={(val) => setFormData({ ...formData, departure_time: val })}
+            onOpenChange={setIsPickerOpen}
+          />
 
           {/* Notes */}
           <div className="space-y-3 group">
@@ -391,24 +377,33 @@ function NewRequestForm() {
       </main>
 
       {/* Fixed Bottom Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-roxou-bg via-roxou-bg/95 to-transparent z-50">
-        <div className="max-w-2xl mx-auto">
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full py-6 bg-gradient-to-r from-roxou-primary via-roxou-secondary to-pink-500 text-white rounded-[32px] font-black text-xl flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 shadow-[0_20px_50px_rgba(157,78,221,0.3)] violet-glow group"
+      <AnimatePresence>
+        {!isPickerOpen && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-roxou-bg via-roxou-bg/95 to-transparent z-50"
           >
-            {loading ? (
-              <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <Zap className="w-6 h-6 fill-current group-hover:animate-bounce" />
-                <span>Encontrar motorista agora</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+            <div className="max-w-2xl mx-auto">
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full py-6 bg-gradient-to-r from-roxou-primary via-roxou-secondary to-pink-500 text-white rounded-[32px] font-black text-xl flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 shadow-[0_20px_50px_rgba(157,78,221,0.3)] violet-glow group"
+              >
+                {loading ? (
+                  <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Zap className="w-6 h-6 fill-current group-hover:animate-bounce" />
+                    <span>Encontrar motorista agora</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
