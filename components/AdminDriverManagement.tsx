@@ -282,14 +282,16 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3">
-                    <Link 
-                      href={`/admin/drivers/${driver.id}`}
-                      className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-roxou-bg border border-roxou-border flex items-center justify-center gap-3 hover:bg-roxou-primary hover:text-white transition-all group-hover:scale-105 text-[10px] font-black uppercase tracking-widest shadow-xl"
+                  <div className="flex flex-col items-end gap-2">
+                    <div 
+                      className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-roxou-bg border border-roxou-border flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest shadow-xl opacity-60 cursor-not-allowed"
                     >
                       Dossiê Completo
                       <ChevronRight className="w-4 h-4" />
-                    </Link>
+                    </div>
+                    <span className="text-[8px] sm:text-[9px] font-bold text-roxou-primary/60 uppercase tracking-widest">
+                      Disponível em breve
+                    </span>
                   </div>
                 </div>
 
