@@ -36,31 +36,34 @@ export default async function AdminDashboard() {
       verification_status,
       vehicle_model,
       vehicle_plate,
-      created_at,
-      profiles:profiles(
-        id,
-        full_name,
-        email,
-        avatar_url,
-        updated_at
-      )
+      created_at
     `);
 
-  console.log("ADMIN driversRows:", driversRows, driversError);
+  // Fetch profiles separately to match manually
+  const { data: profilesRows } = await adminSupabase
+    .from("profiles")
+    .select("id, full_name, email, avatar_url, updated_at")
+    .eq("role", "driver");
 
-  const formattedDrivers = (driversRows || []).map((d: any) => ({
-    id: d.user_id,
-    full_name: d.profiles?.full_name || "N/A",
-    email: d.profiles?.email || "N/A",
-    avatar_url: d.profiles?.avatar_url || "",
-    verification_status: d.verification_status || "pending",
-    updated_at: d.profiles?.updated_at,
-    phone: "N/A",
-    vehicle_model: d.vehicle_model || "N/A",
-    vehicle_plate: d.vehicle_plate || "N/A",
-    admin_review_note: "",
-    created_at: d.created_at
-  }));
+  console.log("ADMIN driversRows:", driversRows?.length, "profilesRows:", profilesRows?.length);
+
+  const formattedDrivers = (driversRows || []).map((d: any) => {
+    const profileMatch = (profilesRows || []).find(p => p.id === d.user_id);
+    
+    return {
+      id: d.user_id,
+      full_name: profileMatch?.full_name || "N/A",
+      email: profileMatch?.email || "N/A",
+      avatar_url: profileMatch?.avatar_url || "",
+      verification_status: d.verification_status || "pending",
+      updated_at: profileMatch?.updated_at,
+      phone: "N/A",
+      vehicle_model: d.vehicle_model || "N/A",
+      vehicle_plate: d.vehicle_plate || "N/A",
+      admin_review_note: "",
+      created_at: d.created_at
+    };
+  });
 
   // Fetch recent reports using admin client
   const { data: reports } = await adminSupabase
