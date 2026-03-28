@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Driver {
   id: string;
@@ -247,10 +248,11 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                   <div className="flex items-center gap-5 sm:gap-8">
                     <div className="relative">
                       <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[32px] bg-roxou-bg border border-roxou-border overflow-hidden violet-glow relative z-10">
-                        <img 
+                        <Image 
                           src={driver.avatar_url || `https://ui-avatars.com/api/?name=${driver.full_name}`} 
                           alt={driver.full_name} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
                           referrerPolicy="no-referrer"
                         />
                       </div>
@@ -282,16 +284,14 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                     </div>
                   </div>
                   
-                  <div className="flex flex-col items-end gap-2">
-                    <div 
-                      className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-roxou-bg border border-roxou-border flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest shadow-xl opacity-60 cursor-not-allowed"
+                  <div className="flex items-center gap-3">
+                    <Link 
+                      href={`/admin/drivers/${driver.id}`}
+                      className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-roxou-bg border border-roxou-border flex items-center justify-center gap-3 hover:bg-roxou-primary hover:text-white transition-all group-hover:scale-105 text-[10px] font-black uppercase tracking-widest shadow-xl"
                     >
                       Dossiê Completo
                       <ChevronRight className="w-4 h-4" />
-                    </div>
-                    <span className="text-[8px] sm:text-[9px] font-bold text-roxou-primary/60 uppercase tracking-widest">
-                      Disponível em breve
-                    </span>
+                    </Link>
                   </div>
                 </div>
 
