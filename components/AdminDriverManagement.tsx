@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Users, 
@@ -42,18 +42,28 @@ interface Driver {
   created_at?: string;
 }
 
-export default function AdminDriverManagement({ initialDrivers }: { initialDrivers: Driver[] }) {
+export default function AdminDriverManagement({ initialDrivers }: { initialDrivers: any[] }) {
   const supabase = createClient();
   const router = useRouter();
-  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
+  
+  // Normalize incoming data
+  const drivers = (initialDrivers || []).map((p: any) => ({
+    id: p.id,
+    full_name: p.full_name || "N/A",
+    email: p.email || "N/A",
+    avatar_url: p.avatar_url || "",
+    verification_status: p.drivers?.[0]?.verification_status || "pending",
+    updated_at: p.updated_at,
+    phone: p.drivers?.[0]?.phone || "N/A",
+    vehicle_model: p.drivers?.[0]?.vehicle_model || "N/A",
+    vehicle_plate: p.drivers?.[0]?.vehicle_plate || "N/A",
+    admin_review_note: p.drivers?.[0]?.admin_review_note || "",
+    created_at: p.drivers?.[0]?.created_at || p.updated_at
+  }));
+
   const [filter, setFilter] = useState<string>("pending");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Sync initialDrivers from server to local state
-  useEffect(() => {
-    setDrivers(initialDrivers);
-  }, [initialDrivers]);
 
   const filteredDrivers = drivers.filter(d => {
     const matchesFilter = d.verification_status === filter;

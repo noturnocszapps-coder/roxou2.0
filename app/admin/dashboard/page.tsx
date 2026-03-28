@@ -29,7 +29,7 @@ export default async function AdminDashboard() {
   }
 
   // Fetch all drivers for the management component using admin client to bypass RLS
-  const { data: profilesWithDrivers } = await adminSupabase
+  const { data: drivers } = await adminSupabase
     .from("profiles")
     .select(`
       id,
@@ -46,22 +46,7 @@ export default async function AdminDashboard() {
         created_at
       )
     `)
-    .eq("role", "driver")
-    .order("updated_at", { ascending: false });
-
-  const allDrivers = (profilesWithDrivers || []).map((p: any) => ({
-    id: p.id,
-    full_name: p.full_name,
-    email: p.email,
-    avatar_url: p.avatar_url,
-    verification_status: p.drivers?.[0]?.verification_status || "pending",
-    updated_at: p.updated_at,
-    phone: p.drivers?.[0]?.phone,
-    vehicle_model: p.drivers?.[0]?.vehicle_model,
-    vehicle_plate: p.drivers?.[0]?.vehicle_plate,
-    admin_review_note: p.drivers?.[0]?.admin_review_note,
-    created_at: p.drivers?.[0]?.created_at
-  }));
+    .eq("role", "driver");
 
   // Fetch recent reports using admin client
   const { data: reports } = await adminSupabase
@@ -84,7 +69,10 @@ export default async function AdminDashboard() {
     .from("transport_requests")
     .select("*", { count: 'exact', head: true });
 
-  const pendingCount = allDrivers.filter(d => d.verification_status === 'pending').length;
+  // Calculate pending count for the dashboard stat
+  const pendingCount = (drivers || []).filter((p: any) => 
+    p.drivers?.[0]?.verification_status === 'pending' || !p.drivers?.[0]
+  ).length;
 
   return (
     <div className="min-h-screen bg-roxou-bg pb-20">
@@ -181,7 +169,7 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12">
           {/* Driver Management Section */}
           <div className="lg:col-span-2">
-            <AdminDriverManagement initialDrivers={allDrivers || []} />
+            <AdminDriverManagement initialDrivers={drivers || []} />
           </div>
 
           {/* Recent Reports Section */}
