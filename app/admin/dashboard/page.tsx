@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Zap, Users, ShieldAlert, CheckCircle2, XCircle, Clock, ChevronRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
+  const adminSupabase = await createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -27,8 +28,8 @@ export default async function AdminDashboard() {
     redirect("/dashboard");
   }
 
-  // Fetch all drivers for the management component
-  const { data: profilesWithDrivers } = await supabase
+  // Fetch all drivers for the management component using admin client to bypass RLS
+  const { data: profilesWithDrivers } = await adminSupabase
     .from("profiles")
     .select(`
       id,
@@ -62,8 +63,8 @@ export default async function AdminDashboard() {
     created_at: p.drivers?.[0]?.created_at
   }));
 
-  // Fetch recent reports
-  const { data: reports } = await supabase
+  // Fetch recent reports using admin client
+  const { data: reports } = await adminSupabase
     .from("reports")
     .select(`
       *,
@@ -73,13 +74,13 @@ export default async function AdminDashboard() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  // Stats
-  const { count: totalDrivers } = await supabase
+  // Stats using admin client
+  const { count: totalDrivers } = await adminSupabase
     .from("profiles")
     .select("*", { count: 'exact', head: true })
     .eq("role", "driver");
 
-  const { count: totalRequests } = await supabase
+  const { count: totalRequests } = await adminSupabase
     .from("transport_requests")
     .select("*", { count: 'exact', head: true });
 
