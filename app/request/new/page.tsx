@@ -189,7 +189,7 @@ function NewRequestForm() {
   }
 
   return (
-    <div className="min-h-screen bg-roxou-bg pb-32">
+    <div className="min-h-screen bg-roxou-bg pb-44">
       {/* Header */}
       <header className="glass sticky top-0 z-40 py-4 px-6 border-b border-roxou-border/50">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -391,7 +391,7 @@ function NewRequestForm() {
       </main>
 
       {/* Fixed Bottom Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-roxou-bg via-roxou-bg/95 to-transparent z-50">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-roxou-bg via-roxou-bg/95 to-transparent z-50">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={handleSubmit}
