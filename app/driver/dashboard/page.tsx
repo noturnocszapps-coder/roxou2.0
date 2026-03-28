@@ -58,7 +58,7 @@ export default async function DriverDashboard() {
       *,
       passenger:profiles!transport_requests_passenger_id_fkey(full_name, avatar_url)
     `)
-    .in("status", ["open", "pending"])
+    .eq("status", "ABERTA")
     .is("driver_id", null)
     .order("created_at", { ascending: false });
 
@@ -69,7 +69,7 @@ export default async function DriverDashboard() {
       *,
       passenger:profiles!transport_requests_passenger_id_fkey(full_name, avatar_url)
     `)
-    .in("status", ["accepted", "en_route", "arrived", "in_progress"])
+    .in("status", ["ACEITA", "EM_NEGOCIACAO"])
     .eq("driver_id", user.id)
     .order("updated_at", { ascending: false });
 
@@ -80,7 +80,7 @@ export default async function DriverDashboard() {
       *,
       passenger:profiles!transport_requests_passenger_id_fkey(full_name, avatar_url)
     `)
-    .in("status", ["completed", "cancelled"])
+    .in("status", ["FINALIZADA", "CANCELADA"])
     .eq("driver_id", user.id)
     .order("updated_at", { ascending: false });
 

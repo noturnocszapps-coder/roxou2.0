@@ -26,7 +26,7 @@ export default async function PassengerDashboard() {
     .eq("passenger_id", user.id)
     .order("created_at", { ascending: false });
 
-  // Fetch active connections
+  // Fetch connections for these requests
   const { data: connections } = await supabase
     .from("connections")
     .select(`
@@ -35,11 +35,9 @@ export default async function PassengerDashboard() {
         full_name, 
         avatar_url,
         drivers:drivers(verification_status)
-      ),
-      request:transport_requests(origin, departure_time, status)
+      )
     `)
-    .eq("passenger_id", user.id)
-    .eq("status", "active");
+    .eq("passenger_id", user.id);
 
   return (
     <DashboardClient 

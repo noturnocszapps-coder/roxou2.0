@@ -133,7 +133,7 @@ function NewRequestForm() {
         departure_time: formatForDB(formData.departure_time),
         notes: formData.notes,
         is_return: formData.is_return,
-        status: "open",
+        status: "ABERTA",
         description: eventContext.nome ? { 
           evento_nome: eventContext.nome, 
           evento_id: eventContext.id 

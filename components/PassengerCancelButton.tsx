@@ -25,9 +25,9 @@ export default function PassengerCancelButton({ requestId, currentStatus }: Pass
     try {
       const { error: updateError } = await supabase
         .from("transport_requests")
-        .update({ status: "cancelled" })
+        .update({ status: "CANCELADA" })
         .eq("id", requestId)
-        .eq("status", "open"); // Only allow if still open
+        .eq("status", "ABERTA"); // Only allow if still open
 
       if (updateError) throw updateError;
 
@@ -39,7 +39,7 @@ export default function PassengerCancelButton({ requestId, currentStatus }: Pass
     }
   };
 
-  if (currentStatus !== "open") {
+  if (currentStatus !== "ABERTA") {
     return null;
   }
 

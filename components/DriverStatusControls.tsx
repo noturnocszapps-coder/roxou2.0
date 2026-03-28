@@ -37,7 +37,7 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
     }
   };
 
-  if (currentStatus === "completed" || currentStatus === "cancelled") {
+  if (currentStatus === "FINALIZADA" || currentStatus === "CANCELADA") {
     return null;
   }
 
@@ -50,9 +50,20 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </div>
       )}
 
-      {currentStatus === "accepted" && (
+      {currentStatus === "EM_NEGOCIACAO" && (
         <button
-          onClick={() => updateStatus("en_route")}
+          onClick={() => updateStatus("ACEITA")}
+          disabled={loading}
+          className="w-full py-4 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+          Aceitar Corrida
+        </button>
+      )}
+
+      {currentStatus === "ACEITA" && (
+        <button
+          onClick={() => updateStatus("A_CAMINHO")}
           disabled={loading}
           className="w-full py-4 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 disabled:opacity-50"
         >
@@ -61,9 +72,9 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </button>
       )}
 
-      {currentStatus === "en_route" && (
+      {currentStatus === "A_CAMINHO" && (
         <button
-          onClick={() => updateStatus("arrived")}
+          onClick={() => updateStatus("NO_LOCAL")}
           disabled={loading}
           className="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-amber-500/90 active:scale-95 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
         >
@@ -72,9 +83,9 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </button>
       )}
 
-      {currentStatus === "arrived" && (
+      {currentStatus === "NO_LOCAL" && (
         <button
-          onClick={() => updateStatus("in_progress")}
+          onClick={() => updateStatus("EM_ANDAMENTO")}
           disabled={loading}
           className="w-full py-4 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 disabled:opacity-50"
         >
@@ -83,9 +94,9 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </button>
       )}
 
-      {currentStatus === "in_progress" && (
+      {currentStatus === "EM_ANDAMENTO" && (
         <button
-          onClick={() => updateStatus("completed")}
+          onClick={() => updateStatus("FINALIZADA")}
           disabled={loading}
           className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-emerald-500/90 active:scale-95 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
         >

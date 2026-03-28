@@ -118,7 +118,7 @@ export default function DashboardClient({ user, requests, connections }: { user:
               <div className="p-5 rounded-[28px] bg-roxou-surface/40 border border-roxou-border flex flex-col gap-1 hover:border-roxou-primary/30 transition-all hover:translate-y-[-2px] group">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-roxou-text-muted/60">Seus Pedidos</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-display font-black text-white group-hover:text-roxou-primary transition-colors">{requests?.filter((r: any) => r.status === 'open').length || 0}</span>
+                  <span className="text-2xl font-display font-black text-white group-hover:text-roxou-primary transition-colors">{requests?.filter((r: any) => r.status === 'ABERTA').length || 0}</span>
                   <span className="text-[10px] font-bold text-roxou-primary">Abertos</span>
                 </div>
               </div>
@@ -201,15 +201,15 @@ export default function DashboardClient({ user, requests, connections }: { user:
                           <Shield className="w-3 h-3 text-roxou-primary" />
                         )}
                         <div className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
-                          conn.request.status === 'accepted' || conn.request.status === 'en_route' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
-                          conn.request.status === 'in_progress' || conn.request.status === 'arrived' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
+                          conn.request.status === 'ACEITA' || conn.request.status === 'A_CAMINHO' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
+                          conn.request.status === 'EM_ANDAMENTO' || conn.request.status === 'NO_LOCAL' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
                           'bg-roxou-text-muted/20 text-roxou-text-muted border border-roxou-text-muted/30'
                         }`}>
-                          {conn.request.status === 'accepted' ? 'Aceito' : 
-                           conn.request.status === 'en_route' ? 'A Caminho' :
-                           conn.request.status === 'arrived' ? 'No Local' :
-                           conn.request.status === 'in_progress' ? 'Em Andamento' : 
-                           conn.request.status === 'completed' ? 'Finalizado' : conn.request.status}
+                          {conn.request.status === 'ACEITA' ? 'Aceito' : 
+                           conn.request.status === 'A_CAMINHO' ? 'A Caminho' :
+                           conn.request.status === 'NO_LOCAL' ? 'No Local' :
+                           conn.request.status === 'EM_ANDAMENTO' ? 'Em Andamento' : 
+                           conn.request.status === 'FINALIZADA' ? 'Finalizado' : conn.request.status}
                         </div>
                       </div>
                       <p className="text-xs text-roxou-text-muted font-medium truncate max-w-[180px]">
@@ -238,7 +238,11 @@ export default function DashboardClient({ user, requests, connections }: { user:
               Meus Pedidos
             </h3>
           </div>
-          <PassengerRequestList initialRequests={requests || []} userId={user.id} />
+          <PassengerRequestList 
+            initialRequests={requests || []} 
+            initialConnections={connections || []}
+            userId={user.id} 
+          />
         </section>
       </main>
     </motion.div>

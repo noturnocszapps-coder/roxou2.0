@@ -183,18 +183,18 @@ export default function ChatPage() {
             </p>
             <div className="mt-1 flex items-center gap-2">
               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                connection.request.status === 'en_route' ? 'bg-roxou-primary' :
-                connection.request.status === 'arrived' ? 'bg-amber-500' :
-                connection.request.status === 'in_progress' ? 'bg-roxou-secondary' :
+                connection.request.status === 'A_CAMINHO' ? 'bg-roxou-primary' :
+                connection.request.status === 'NO_LOCAL' ? 'bg-amber-500' :
+                connection.request.status === 'EM_ANDAMENTO' ? 'bg-roxou-secondary' :
                 'bg-roxou-text-muted'
               }`} />
               <span className="text-[9px] font-black uppercase tracking-widest text-white/50">
                 Status: {
-                  connection.request.status === 'accepted' ? 'Aceito' :
-                  connection.request.status === 'en_route' ? 'Motorista a Caminho' :
-                  connection.request.status === 'arrived' ? 'Motorista no Local' :
-                  connection.request.status === 'in_progress' ? 'Em Andamento' :
-                  connection.request.status === 'completed' ? 'Finalizado' :
+                  connection.request.status === 'ACEITA' ? 'Aceito' :
+                  connection.request.status === 'A_CAMINHO' ? 'Motorista a Caminho' :
+                  connection.request.status === 'NO_LOCAL' ? 'Motorista no Local' :
+                  connection.request.status === 'EM_ANDAMENTO' ? 'Em Andamento' :
+                  connection.request.status === 'FINALIZADA' ? 'Finalizado' :
                   connection.request.status
                 }
               </span>
