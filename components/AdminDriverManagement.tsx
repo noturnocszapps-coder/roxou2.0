@@ -61,7 +61,18 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
     created_at: p.drivers?.[0]?.created_at || p.updated_at
   }));
 
-  const [filter, setFilter] = useState<string>("pending");
+  const pendingCount = drivers.filter(d => d.verification_status === 'pending').length;
+  const inReviewCount = drivers.filter(d => d.verification_status === 'in_review').length;
+  const approvedCount = drivers.filter(d => d.verification_status === 'approved').length;
+  const rejectedCount = drivers.filter(d => d.verification_status === 'rejected').length;
+
+  const defaultFilter =
+    pendingCount > 0 ? "pending" :
+    approvedCount > 0 ? "approved" :
+    inReviewCount > 0 ? "in_review" :
+    "rejected";
+
+  const [filter, setFilter] = useState<string>(defaultFilter);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -114,11 +125,6 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
     }
     setActionLoading(null);
   };
-
-  const pendingCount = drivers.filter(d => d.verification_status === 'pending').length;
-  const inReviewCount = drivers.filter(d => d.verification_status === 'in_review').length;
-  const approvedCount = drivers.filter(d => d.verification_status === 'approved').length;
-  const rejectedCount = drivers.filter(d => d.verification_status === 'rejected').length;
 
   const tabs = [
     { id: "pending", label: "Pendentes", count: pendingCount, icon: Clock, color: "text-roxou-primary", bg: "bg-roxou-primary/10" },
@@ -356,14 +362,10 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                <UserX className="w-10 h-10 text-roxou-text-muted/30" />}
             </div>
             <h4 className="font-display font-black text-white text-2xl mb-2 tracking-tight">
-              {filter === 'pending' ? 'Fila de Espera Vazia' : 
-               filter === 'approved' ? 'Nenhum Motorista Ativo' : 
-               filter === 'in_review' ? 'Nada em Análise' :
-               'Lista Negra Vazia'}
+              Nenhum motorista com esse status.
             </h4>
             <p className="text-sm text-roxou-text-muted/60 max-w-xs mx-auto font-medium">
-              {filter === 'pending' ? 'Quando novos motoristas se cadastrarem, eles aparecerão aqui para sua revisão.' : 
-               'Não encontramos registros com este status no momento.'}
+              Tente outro filtro ou ajuste sua busca.
             </p>
           </div>
         )}
