@@ -26,16 +26,18 @@ import AddressSearch from "@/components/AddressSearch";
 
 export default function NewRequestPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-roxou-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Zap className="w-12 h-12 text-roxou-primary animate-pulse" />
-          <p className="text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Carregando pista...</p>
+    <div className="min-h-screen bg-roxou-bg">
+      <Suspense fallback={
+        <div className="min-h-screen bg-[#0b0b0f] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Zap className="w-12 h-12 text-roxou-primary animate-pulse" />
+            <p className="text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Carregando pista...</p>
+          </div>
         </div>
-      </div>
-    }>
-      <NewRequestForm />
-    </Suspense>
+      }>
+        <NewRequestForm />
+      </Suspense>
+    </div>
   );
 }
 
@@ -190,6 +192,8 @@ function NewRequestForm() {
       </div>
     );
   }
+
+  const isReady = formData.origin && formData.departure_time && formData.accepted_terms;
 
   return (
     <div className="min-h-screen bg-roxou-bg pb-44">
@@ -388,15 +392,28 @@ function NewRequestForm() {
             <div className="max-w-2xl mx-auto">
               <button
                 onClick={handleSubmit}
-                disabled={loading}
-                className="w-full py-4.5 bg-gradient-to-r from-roxou-primary via-roxou-secondary to-pink-500 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-2.5 hover:opacity-90 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 shadow-[0_15px_40px_rgba(157,78,221,0.25)] violet-glow group"
+                disabled={loading || !isReady}
+                className={`w-full py-4.5 bg-gradient-to-r from-roxou-primary via-roxou-secondary to-pink-500 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-30 disabled:grayscale disabled:scale-100 group relative overflow-hidden ${
+                  isReady && !loading ? 'shadow-[0_20px_50px_rgba(157,78,221,0.4)] violet-glow scale-[1.02]' : 'shadow-none'
+                }`}
               >
                 {loading ? (
-                  <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="animate-pulse">Buscando motoristas...</span>
+                  </div>
                 ) : (
                   <>
-                    <Zap className="w-5 h-5 fill-current group-hover:animate-bounce" />
+                    <Zap className={`w-5 h-5 fill-current transition-transform ${isReady ? 'group-hover:animate-bounce' : ''}`} />
                     <span>Encontrar motorista</span>
+                    {isReady && (
+                      <motion.div 
+                        layoutId="ready-glow"
+                        className="absolute inset-0 bg-white/10"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      />
+                    )}
                   </>
                 )}
               </button>
