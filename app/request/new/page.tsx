@@ -194,22 +194,22 @@ function NewRequestForm() {
   return (
     <div className="min-h-screen bg-roxou-bg pb-44">
       {/* Header */}
-      <header className="glass sticky top-0 z-40 py-4 px-6 border-b border-roxou-border/50">
+      <header className="glass sticky top-0 z-40 py-3 px-6 border-b border-roxou-border/50">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="p-2 hover:bg-white/5 rounded-full transition-colors">
-              <ArrowLeft className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="p-1.5 hover:bg-white/5 rounded-full transition-colors">
+              <ArrowLeft className="w-5 h-5 text-white" />
             </Link>
-            <h1 className="text-xl font-display font-black text-white tracking-tight">Novo Pedido</h1>
+            <h1 className="text-lg font-display font-black text-white tracking-tight">Novo Pedido</h1>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Pista Ativa</span>
+          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Pista Ativa</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 pt-8 space-y-8">
+      <main className="max-w-2xl mx-auto px-6 pt-6 space-y-6">
         {/* Event Context Card */}
         <AnimatePresence>
           {eventContext.nome && (
@@ -219,20 +219,20 @@ function NewRequestForm() {
               className="relative group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-roxou-primary/20 to-violet-600/20 blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
-              <div className="relative p-6 rounded-[40px] bg-roxou-surface/40 backdrop-blur-xl border border-roxou-primary/30 shadow-2xl overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <Sparkles className="w-20 h-20 text-roxou-primary" />
+              <div className="relative p-4 rounded-3xl bg-roxou-surface/40 backdrop-blur-xl border border-roxou-primary/30 shadow-2xl overflow-hidden">
+                <div className="absolute top-0 right-0 p-2 opacity-10">
+                  <Sparkles className="w-16 h-16 text-roxou-primary" />
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-roxou-primary/20 flex items-center justify-center flex-shrink-0 border border-roxou-primary/30">
-                    <Calendar className="w-6 h-6 text-roxou-primary" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-roxou-primary/20 flex items-center justify-center flex-shrink-0 border border-roxou-primary/30">
+                    <Calendar className="w-5 h-5 text-roxou-primary" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Indo para o evento</p>
-                    <h3 className="text-2xl font-display font-black text-white leading-tight">{eventContext.nome}</h3>
+                  <div className="space-y-0.5">
+                    <p className="text-[9px] font-black text-roxou-primary uppercase tracking-[0.2em]">Indo para</p>
+                    <h3 className="text-xl font-display font-black text-white leading-tight">{eventContext.nome}</h3>
                     {eventContext.origem && (
-                      <p className="text-xs text-roxou-text-muted font-medium flex items-center gap-1.5 mt-2">
-                        <MapPin className="w-3 h-3" />
+                      <p className="text-[10px] text-roxou-text-muted font-medium flex items-center gap-1 mt-1">
+                        <MapPin className="w-2.5 h-2.5" />
                         Saindo de: <span className="text-white">{eventContext.origem}</span>
                       </p>
                     )}
@@ -244,14 +244,14 @@ function NewRequestForm() {
         </AnimatePresence>
 
         {/* Form Title */}
-        <div className="space-y-2">
-          <h2 className="text-4xl font-display font-black text-white tracking-tight leading-none">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-display font-black text-white tracking-tight leading-none">
             Bora pro <span className="text-transparent bg-clip-text bg-gradient-to-r from-roxou-primary to-violet-400">rolê?</span>
           </h2>
-          <p className="text-roxou-text-muted font-medium">Preencha os detalhes e encontre um motorista agora.</p>
+          <p className="text-xs text-roxou-text-muted font-medium">Preencha os detalhes e encontre um motorista.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-10">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Destination */}
           <AddressSearch 
             value={formData.origin}
@@ -268,18 +268,18 @@ function NewRequestForm() {
           />
 
           {/* Notes */}
-          <div className="space-y-3 group">
-            <label className="text-[10px] text-roxou-primary uppercase font-black tracking-[0.25em] ml-1 opacity-80 group-focus-within:opacity-100 transition-opacity">Detalhes do Grupo</label>
+          <div className="space-y-2 group">
+            <label className="text-[9px] text-roxou-primary uppercase font-black tracking-[0.25em] ml-1 opacity-70 group-focus-within:opacity-100 transition-opacity">Detalhes do Grupo</label>
             <div className="relative">
               <textarea 
-                rows={3}
+                rows={2}
                 placeholder="Ex: 3 pessoas, saindo da portaria..."
-                className="w-full p-6 rounded-[32px] bg-roxou-surface/50 border border-roxou-border focus:border-roxou-primary focus:ring-1 focus:ring-roxou-primary/50 outline-none transition-all placeholder:text-roxou-text-muted/20 resize-none text-base font-medium text-white shadow-inner"
+                className="w-full p-4 pr-14 rounded-2xl bg-roxou-surface/50 border border-roxou-border focus:border-roxou-primary focus:ring-1 focus:ring-roxou-primary/50 outline-none transition-all placeholder:text-roxou-text-muted/20 resize-none text-sm font-medium text-white shadow-inner"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               />
-              <div className="absolute right-6 top-6 w-10 h-10 rounded-2xl bg-roxou-primary/10 flex items-center justify-center border border-roxou-primary/20">
-                <Users className="w-5 h-5 text-roxou-primary" />
+              <div className="absolute right-4 top-4 w-8 h-8 rounded-xl bg-roxou-primary/10 flex items-center justify-center border border-roxou-primary/20">
+                <Users className="w-4 h-4 text-roxou-primary" />
               </div>
             </div>
           </div>
@@ -287,61 +287,61 @@ function NewRequestForm() {
           {/* Return Trip Toggle */}
           <div 
             onClick={() => setFormData({ ...formData, is_return: !formData.is_return })}
-            className={`flex items-center justify-between p-6 rounded-[32px] border transition-all cursor-pointer group select-none ${
+            className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group select-none ${
               formData.is_return 
-                ? 'bg-roxou-primary/10 border-roxou-primary shadow-[0_0_30px_rgba(124,58,237,0.15)]' 
-                : 'bg-roxou-surface/50 border-roxou-border hover:border-roxou-primary/30'
+                ? 'bg-roxou-primary/10 border-roxou-primary/50 shadow-[0_0_20px_rgba(124,58,237,0.1)]' 
+                : 'bg-roxou-surface/40 border-roxou-border hover:border-roxou-primary/30'
             }`}
           >
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                 formData.is_return ? 'bg-roxou-primary text-white' : 'bg-roxou-bg text-roxou-text-muted'
               }`}>
-                <Repeat className="w-6 h-6" />
+                <Repeat className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-black text-lg text-white">Quero ida e volta 🚗🔁</p>
-                <p className="text-[10px] text-roxou-text-muted uppercase tracking-widest">Garante sua volta com segurança</p>
+                <p className="font-black text-base text-white">Quero ida e volta</p>
+                <p className="text-[9px] text-roxou-text-muted uppercase tracking-widest">Garante sua volta com segurança</p>
               </div>
             </div>
-            <div className={`w-14 h-8 rounded-full p-1 transition-all ${
+            <div className={`w-12 h-6.5 rounded-full p-1 transition-all ${
               formData.is_return ? 'bg-roxou-primary' : 'bg-roxou-bg border border-roxou-border'
             }`}>
               <motion.div 
-                animate={{ x: formData.is_return ? 24 : 0 }}
-                className="w-6 h-6 rounded-full bg-white shadow-lg"
+                animate={{ x: formData.is_return ? 22 : 0 }}
+                className="w-4.5 h-4.5 rounded-full bg-white shadow-lg"
               />
             </div>
           </div>
 
           {/* Conversion Block */}
-          <div className="flex items-center justify-center gap-2 py-2">
-            <span className="text-xs font-black text-roxou-primary animate-pulse">⚡</span>
-            <p className="text-xs font-black text-roxou-primary uppercase tracking-[0.2em]">Alta chance de encontrar motorista agora</p>
+          <div className="flex items-center justify-center gap-2 py-1">
+            <span className="text-[10px] font-black text-roxou-primary animate-pulse">⚡</span>
+            <p className="text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Alta chance de encontrar motorista</p>
           </div>
 
           {/* Security Block */}
-          <div className="p-8 rounded-[40px] bg-roxou-surface/30 border border-roxou-border space-y-6 relative overflow-hidden">
+          <div className="p-6 rounded-3xl bg-roxou-surface/30 border border-roxou-border space-y-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5">
-              <ShieldCheck className="w-32 h-32 text-white" />
+              <ShieldCheck className="w-24 h-24 text-white" />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                <ShieldCheck className="w-6 h-6 text-emerald-500" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <ShieldCheck className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
-                <h4 className="text-lg font-display font-black text-white tracking-tight">Segurança Roxou</h4>
-                <p className="text-[10px] text-roxou-text-muted uppercase tracking-widest">Sua integridade é prioridade</p>
+                <h4 className="text-base font-display font-black text-white tracking-tight">Segurança Roxou</h4>
+                <p className="text-[9px] text-roxou-text-muted uppercase tracking-widest">Sua integridade é prioridade</p>
               </div>
             </div>
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {[
                 "Negociação direta com o motorista",
                 "Você escolhe com quem ir (veja o perfil)",
                 "Priorize locais seguros e iluminados"
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm text-roxou-text-muted font-medium">
-                  <div className="w-1.5 h-1.5 rounded-full bg-roxou-primary" />
+                <li key={i} className="flex items-center gap-2.5 text-xs text-roxou-text-muted font-medium">
+                  <div className="w-1 h-1 rounded-full bg-roxou-primary" />
                   {item}
                 </li>
               ))}
@@ -349,14 +349,14 @@ function NewRequestForm() {
             
             <div 
               onClick={() => setFormData({ ...formData, accepted_terms: !formData.accepted_terms })}
-              className="flex items-center gap-4 pt-6 border-t border-roxou-border cursor-pointer group"
+              className="flex items-center gap-3 pt-4 border-t border-roxou-border cursor-pointer group"
             >
-              <div className={`w-7 h-7 rounded-xl border flex items-center justify-center transition-all ${
+              <div className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
                 formData.accepted_terms ? 'bg-roxou-primary border-roxou-primary' : 'bg-roxou-bg border-roxou-border'
               }`}>
-                {formData.accepted_terms && <CheckCircle2 className="w-4 h-4 text-white" />}
+                {formData.accepted_terms && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
               </div>
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] cursor-pointer select-none text-white opacity-80 group-hover:opacity-100">Aceito os termos e avisos</label>
+              <label className="text-[9px] font-black uppercase tracking-[0.2em] cursor-pointer select-none text-white opacity-70 group-hover:opacity-100">Aceito os termos e avisos</label>
             </div>
           </div>
 
@@ -383,20 +383,20 @@ function NewRequestForm() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-roxou-bg via-roxou-bg/95 to-transparent z-50"
+            className="fixed bottom-0 left-0 right-0 p-5 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-roxou-bg via-roxou-bg/95 to-transparent z-50"
           >
             <div className="max-w-2xl mx-auto">
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-6 bg-gradient-to-r from-roxou-primary via-roxou-secondary to-pink-500 text-white rounded-[32px] font-black text-xl flex items-center justify-center gap-3 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 shadow-[0_20px_50px_rgba(157,78,221,0.3)] violet-glow group"
+                className="w-full py-4.5 bg-gradient-to-r from-roxou-primary via-roxou-secondary to-pink-500 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-2.5 hover:opacity-90 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 shadow-[0_15px_40px_rgba(157,78,221,0.25)] violet-glow group"
               >
                 {loading ? (
-                  <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Zap className="w-6 h-6 fill-current group-hover:animate-bounce" />
-                    <span>Encontrar motorista agora</span>
+                    <Zap className="w-5 h-5 fill-current group-hover:animate-bounce" />
+                    <span>Encontrar motorista</span>
                   </>
                 )}
               </button>
