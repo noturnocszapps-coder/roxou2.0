@@ -29,26 +29,40 @@ export default async function AdminDashboard() {
   }
 
   // Fetch all drivers for the management component using admin client to bypass RLS
-  const { data: drivers } = await adminSupabase
-    .from("profiles")
+  const { data: driversData } = await adminSupabase
+    .from("drivers")
     .select(`
-      id,
-      full_name,
-      email,
-      avatar_url,
-      updated_at,
-      drivers:drivers(
-        verification_status,
-        phone,
-        vehicle_model,
-        vehicle_plate,
-        admin_review_note,
-        created_at
+      user_id,
+      verification_status,
+      phone,
+      vehicle_model,
+      vehicle_plate,
+      admin_review_note,
+      created_at,
+      profiles:profiles(
+        id,
+        full_name,
+        email,
+        avatar_url,
+        updated_at
       )
-    `)
-    .eq("role", "driver");
+    `);
 
-  console.log("SERVER DRIVERS:", drivers);
+  const formattedDrivers = (driversData || []).map((d: any) => ({
+    id: d.user_id,
+    full_name: d.profiles?.full_name || "N/A",
+    email: d.profiles?.email || "N/A",
+    avatar_url: d.profiles?.avatar_url || "",
+    verification_status: d.verification_status || "pending",
+    updated_at: d.profiles?.updated_at,
+    phone: d.phone || "N/A",
+    vehicle_model: d.vehicle_model || "N/A",
+    vehicle_plate: d.vehicle_plate || "N/A",
+    admin_review_note: d.admin_review_note || "",
+    created_at: d.created_at
+  }));
+
+  console.log("SERVER DRIVERS (FORMATTED):", formattedDrivers.length);
 
   // Fetch recent reports using admin client
   const { data: reports } = await adminSupabase
@@ -72,8 +86,8 @@ export default async function AdminDashboard() {
     .select("*", { count: 'exact', head: true });
 
   // Calculate pending count for the dashboard stat
-  const pendingCount = (drivers || []).filter((p: any) => 
-    p.drivers?.[0]?.verification_status === 'pending' || !p.drivers?.[0]
+  const pendingCount = formattedDrivers.filter((d: any) => 
+    d.verification_status === 'pending'
   ).length;
 
   return (
@@ -171,7 +185,7 @@ export default async function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12">
           {/* Driver Management Section */}
           <div className="lg:col-span-2">
-            <AdminDriverManagement initialDrivers={drivers || []} />
+            <AdminDriverManagement initialDrivers={formattedDrivers} />
           </div>
 
           {/* Recent Reports Section */}
