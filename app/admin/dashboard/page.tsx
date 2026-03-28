@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Zap, Users, ShieldAlert, CheckCircle2, XCircle, Clock, ChevronRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import LogoutButton from "@/components/LogoutButton";
 import AdminDriverManagement from "@/components/AdminDriverManagement";
 import RefreshDashboard from "@/components/RefreshDashboard";
@@ -44,8 +45,6 @@ export default async function AdminDashboard() {
     .from("profiles")
     .select("id, full_name, email, avatar_url");
 
-  console.log("PROFILES:", profiles);
-
   const formattedDrivers = (driversRows || []).map((d: any) => {
     const profile = profiles?.find((p: any) => p.id === d.user_id);
 
@@ -56,9 +55,9 @@ export default async function AdminDashboard() {
       avatar_url: profile?.avatar_url ?? "",
       verification_status: d.verification_status ?? "pending",
       updated_at: profile?.updated_at ?? null,
-      phone: "N/A",
-      vehicle_model: d.vehicle_model ?? "N/A",
-      vehicle_plate: d.vehicle_plate ?? "N/A",
+      phone: "Sem telefone",
+      vehicle_model: d.vehicle_model ?? "Sem modelo",
+      vehicle_plate: d.vehicle_plate ?? "Sem placa",
       admin_review_note: "",
       created_at: d.created_at
     };
@@ -104,12 +103,13 @@ export default async function AdminDashboard() {
               <span className="hidden md:inline text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Painel de Controle</span>
               <Link 
                 href="/profile"
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary transition-all active:scale-95 shadow-lg"
+                className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary transition-all active:scale-95 shadow-lg"
               >
-                <img 
+                <Image 
                   src={user.user_metadata.avatar_url || `https://ui-avatars.com/api/?name=${user.email}`} 
                   alt="Admin" 
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                   referrerPolicy="no-referrer"
                 />
               </Link>

@@ -1,8 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { 
   ArrowLeft, 
   Zap, 
@@ -21,8 +21,24 @@ import { motion } from "motion/react";
 import RoxouDateTimePicker from "@/components/RoxouDateTimePicker";
 
 export default function NewRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-roxou-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Zap className="w-12 h-12 text-roxou-primary animate-pulse" />
+          <p className="text-[10px] font-black text-roxou-primary uppercase tracking-[0.2em]">Carregando pista...</p>
+        </div>
+      </div>
+    }>
+      <NewRequestForm />
+    </Suspense>
+  );
+}
+
+function NewRequestForm() {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -34,6 +50,30 @@ export default function NewRequestPage() {
     is_return: false,
     accepted_terms: false,
   });
+
+  const [eventContext, setEventContext] = useState<{
+    id: string | null;
+    nome: string | null;
+  }>({ id: null, nome: null });
+
+  useEffect(() => {
+    const destino = searchParams.get("destino");
+    const origem = searchParams.get("origem");
+    const eventoId = searchParams.get("evento_id");
+    const eventoNome = searchParams.get("evento_nome");
+
+    if (destino || origem) {
+      setFormData(prev => ({
+        ...prev,
+        origin: destino || prev.origin,
+        notes: origem ? `Saindo de: ${origem}. ${prev.notes}`.trim() : prev.notes
+      }));
+    }
+
+    if (eventoId || eventoNome) {
+      setEventContext({ id: eventoId, nome: eventoNome });
+    }
+  }, [searchParams]);
 
   const formatForDB = (isoString: string) => {
     if (!isoString) return "";
@@ -81,6 +121,10 @@ export default function NewRequestPage() {
         notes: formData.notes,
         is_return: formData.is_return,
         status: "open",
+        description: eventContext.nome ? { 
+          evento_nome: eventContext.nome, 
+          evento_id: eventContext.id 
+        } : null
       });
 
     if (insertError) {
@@ -169,6 +213,22 @@ export default function NewRequestPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-6 pt-10 pb-20">
+        {eventContext.nome && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 rounded-[32px] bg-roxou-primary/10 border border-roxou-primary/20 flex items-center gap-4 shadow-xl shadow-roxou-primary/5"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-roxou-primary/20 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-6 h-6 text-roxou-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-roxou-primary uppercase tracking-widest">Você está indo para:</p>
+              <p className="text-xl font-display font-black text-white">{eventContext.nome}</p>
+            </div>
+          </motion.div>
+        )}
+
         <div className="mb-12">
           <h2 className="text-4xl font-display font-black mb-3 tracking-tight">Para onde é o <span className="text-transparent bg-clip-text bg-gradient-to-r from-roxou-primary to-violet-400">rolê?</span></h2>
           <p className="text-roxou-text-muted font-medium">Informe seu destino e horário para que os motoristas te encontrem na pista.</p>

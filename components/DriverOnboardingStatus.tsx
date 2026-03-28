@@ -48,14 +48,6 @@ export default function DriverOnboardingStatus({
           </div>
         </div>
 
-        {/* PART 4: Temporary Debug Text */}
-        <div className="p-4 bg-white/5 rounded-2xl text-left font-mono text-[10px] space-y-1 border border-white/5">
-          <p className="text-roxou-primary">DEBUG INFO (Dev Only):</p>
-          <p className="text-white">role: <span className="text-roxou-text-muted">{role || "null"}</span></p>
-          <p className="text-white">driver row: <span className="text-roxou-text-muted">{driverFound ? "found" : "not found"}</span></p>
-          <p className="text-white">verification_status: <span className="text-roxou-text-muted">{verificationStatus || "null"}</span></p>
-        </div>
-        
         <DriverLogoutButton />
       </div>
     </div>

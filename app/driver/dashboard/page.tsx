@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import Image from "next/image";
 import { Zap, MapPin, Clock, MessageSquare, ChevronRight, Star, Users, Navigation, DollarSign, AlertCircle, Activity } from "lucide-react";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
@@ -109,12 +110,13 @@ export default async function DriverDashboard() {
             </div>
             <Link 
               href="/profile"
-              className="w-10 h-10 rounded-full bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary transition-all active:scale-95"
+              className="relative w-10 h-10 rounded-full bg-roxou-surface border border-roxou-border overflow-hidden hover:border-roxou-primary transition-all active:scale-95"
             >
-              <img 
+              <Image 
                 src={user.user_metadata.avatar_url || `https://ui-avatars.com/api/?name=${user.email}`} 
                 alt="Profile" 
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 referrerPolicy="no-referrer"
               />
             </Link>
@@ -152,11 +154,12 @@ export default async function DriverDashboard() {
                   href={`/chat/${conn.id}`}
                   className="flex-shrink-0 w-16 group"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-roxou-surface border border-roxou-border overflow-hidden relative group-hover:border-roxou-primary transition-all">
-                    <img 
+                  <div className="relative w-16 h-16 rounded-2xl bg-roxou-surface border border-roxou-border overflow-hidden group-hover:border-roxou-primary transition-all">
+                    <Image 
                       src={conn.passenger.avatar_url || `https://ui-avatars.com/api/?name=${conn.passenger.full_name}`} 
                       alt={conn.passenger.full_name} 
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                       referrerPolicy="no-referrer"
                     />
                   </div>

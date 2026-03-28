@@ -197,7 +197,7 @@ export default async function DriverDossierPage({ params }: PageProps) {
               <div className="flex justify-between items-center py-3 border-b border-roxou-border/50">
                 <span className="text-xs text-roxou-text-muted font-medium">Última Atualização</span>
                 <span className="text-sm font-bold">
-                  {profile.updated_at ? new Date(profile.updated_at).toLocaleDateString('pt-BR') : "N/A"}
+                  {profile.updated_at ? new Date(profile.updated_at).toLocaleDateString('pt-BR') : "Sem informação"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-3">

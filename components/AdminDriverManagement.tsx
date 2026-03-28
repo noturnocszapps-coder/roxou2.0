@@ -55,14 +55,14 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
 
     return {
       id: p.id,
-      full_name: p.full_name || "N/A",
-      email: p.email || "N/A",
+      full_name: p.full_name || "Sem nome",
+      email: p.email || "Sem e-mail",
       avatar_url: p.avatar_url || "",
       verification_status: driverData?.verification_status || "pending",
       updated_at: p.updated_at,
-      phone: driverData?.phone || "N/A",
-      vehicle_model: driverData?.vehicle_model || "N/A",
-      vehicle_plate: driverData?.vehicle_plate || "N/A",
+      phone: driverData?.phone || "Sem telefone",
+      vehicle_model: driverData?.vehicle_model || "Sem modelo",
+      vehicle_plate: driverData?.vehicle_plate || "Sem placa",
       admin_review_note: driverData?.admin_review_note || "",
       created_at: driverData?.created_at || p.updated_at
     };
@@ -82,6 +82,7 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const [filter, setFilter] = useState<string>(defaultFilter);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showBulkConfirm, setShowBulkConfirm] = useState<{ status: "approved" | "rejected", count: number } | null>(null);
 
   const filteredDrivers = normalizedDrivers.filter(d => {
     const matchesFilter = d.verification_status === filter;
@@ -113,10 +114,15 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
     const driversToUpdate = filteredDrivers.map(d => d.id);
     if (driversToUpdate.length === 0) return;
 
-    if (!confirm(`Tem certeza que deseja ${status === 'approved' ? 'APROVAR' : 'REJEITAR'} todos os ${driversToUpdate.length} motoristas filtrados?`)) {
-      return;
-    }
+    setShowBulkConfirm({ status, count: driversToUpdate.length });
+  };
 
+  const confirmBulkAction = async () => {
+    if (!showBulkConfirm) return;
+    const { status, count } = showBulkConfirm;
+    const driversToUpdate = filteredDrivers.map(d => d.id);
+    
+    setShowBulkConfirm(null);
     setActionLoading("bulk");
     // CRITICAL: Using .from("drivers") as requested
     const { error } = await supabase
@@ -162,20 +168,6 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
           </div>
         </div>
 
-        {/* DEBUG BLOCK */}
-        <div className="p-4 bg-black/50 border border-roxou-border rounded-2xl text-[10px] font-mono text-roxou-text-muted overflow-auto max-h-60 space-y-2">
-          <p>RAW_INITIAL_DRIVERS_COUNT: {initialDrivers?.length || 0}</p>
-          <p>NORMALIZED_DRIVERS_COUNT: {normalizedDrivers.length}</p>
-          <div>
-            <p>NORMALIZED_STATUSES_JSON:</p>
-            <pre>{JSON.stringify(normalizedDrivers.map(d => ({ id: d.id, status: d.verification_status })), null, 2)}</pre>
-          </div>
-          <div>
-            <p>RAW_INITIAL_DRIVERS_JSON:</p>
-            <pre>{JSON.stringify(initialDrivers, null, 2)}</pre>
-          </div>
-        </div>
-        
         {/* Professional Tabs */}
         <div className="flex items-center gap-1 p-1.5 rounded-[24px] bg-roxou-surface border border-roxou-border shadow-2xl overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
@@ -229,6 +221,46 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
               {actionLoading === "bulk" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserX className="w-3.5 h-3.5" />}
               Rejeitar Todos
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Confirm Modal */}
+      {showBulkConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-lg rounded-[48px] bg-roxou-surface border border-roxou-border p-10 sm:p-12 space-y-8 shadow-2xl">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${showBulkConfirm.status === 'approved' ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
+                <AlertCircle className={`w-6 h-6 ${showBulkConfirm.status === 'approved' ? 'text-emerald-500' : 'text-red-500'}`} />
+              </div>
+              <div>
+                <h4 className="text-xl font-display font-black text-white">Confirmação em Massa</h4>
+                <p className="text-xs text-roxou-text-muted">Esta ação afetará múltiplos registros</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-roxou-text-muted leading-relaxed">
+              Tem certeza que deseja <span className={`font-bold ${showBulkConfirm.status === 'approved' ? 'text-emerald-500' : 'text-red-500'}`}>
+                {showBulkConfirm.status === 'approved' ? 'APROVAR' : 'REJEITAR'}
+              </span> todos os <span className="text-white font-bold">{showBulkConfirm.count}</span> motoristas filtrados?
+            </p>
+
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setShowBulkConfirm(null)}
+                className="flex-1 px-6 py-4 rounded-2xl bg-roxou-bg border border-roxou-border text-[10px] font-black uppercase tracking-widest hover:bg-roxou-surface transition-all"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmBulkAction}
+                className={`flex-1 px-6 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl ${
+                  showBulkConfirm.status === 'approved' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20' : 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
+                }`}
+              >
+                Confirmar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -310,7 +342,7 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
                       <Hash className="w-3.5 h-3.5" />
                       <span className="text-[9px] font-black uppercase tracking-widest">Placa</span>
                     </div>
-                    <p className="text-base font-bold text-white/90 uppercase tracking-wider">{driver.vehicle_plate || "N/A"}</p>
+                    <p className="text-base font-bold text-white/90 uppercase tracking-wider">{driver.vehicle_plate || "Sem placa"}</p>
                   </div>
                   
                   <div className="p-5 rounded-3xl bg-roxou-bg/40 border border-roxou-border/50 space-y-3 group/item hover:border-roxou-primary/30 transition-colors">
