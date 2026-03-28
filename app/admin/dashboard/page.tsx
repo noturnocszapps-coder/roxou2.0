@@ -40,26 +40,25 @@ export default async function AdminDashboard() {
     `);
 
   // Fetch profiles separately to match manually
-  const { data: profilesRows } = await adminSupabase
+  const { data: profiles } = await adminSupabase
     .from("profiles")
-    .select("id, full_name, email, avatar_url, updated_at")
-    .eq("role", "driver");
+    .select("id, full_name, email, avatar_url");
 
-  console.log("ADMIN driversRows:", driversRows?.length, "profilesRows:", profilesRows?.length);
+  console.log("PROFILES:", profiles);
 
   const formattedDrivers = (driversRows || []).map((d: any) => {
-    const profileMatch = (profilesRows || []).find(p => p.id === d.user_id);
-    
+    const profile = profiles?.find((p: any) => p.id === d.user_id);
+
     return {
       id: d.user_id,
-      full_name: profileMatch?.full_name || "N/A",
-      email: profileMatch?.email || "N/A",
-      avatar_url: profileMatch?.avatar_url || "",
-      verification_status: d.verification_status || "pending",
-      updated_at: profileMatch?.updated_at,
+      full_name: profile?.full_name ?? "Sem nome",
+      email: profile?.email ?? "Sem email",
+      avatar_url: profile?.avatar_url ?? "",
+      verification_status: d.verification_status ?? "pending",
+      updated_at: profile?.updated_at ?? null,
       phone: "N/A",
-      vehicle_model: d.vehicle_model || "N/A",
-      vehicle_plate: d.vehicle_plate || "N/A",
+      vehicle_model: d.vehicle_model ?? "N/A",
+      vehicle_plate: d.vehicle_plate ?? "N/A",
       admin_review_note: "",
       created_at: d.created_at
     };
