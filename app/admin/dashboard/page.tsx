@@ -48,6 +48,8 @@ export default async function AdminDashboard() {
     `)
     .eq("role", "driver");
 
+  console.log("SERVER DRIVERS:", drivers);
+
   // Fetch recent reports using admin client
   const { data: reports } = await adminSupabase
     .from("reports")
