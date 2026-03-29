@@ -8,9 +8,10 @@ import { Play, CheckCircle2, Loader2, AlertCircle, Navigation, MapPin } from "lu
 interface DriverStatusControlsProps {
   requestId: string;
   currentStatus: string;
+  driverId: string;
 }
 
-export default function DriverStatusControls({ requestId, currentStatus }: DriverStatusControlsProps) {
+export default function DriverStatusControls({ requestId, currentStatus, driverId }: DriverStatusControlsProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
@@ -23,8 +24,12 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
     try {
       const { error: updateError } = await supabase
         .from("transport_requests")
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", requestId)
+        .eq("driver_id", driverId) // Safety: only the chosen driver can update
         .eq("status", currentStatus); // Ensure we are updating from the expected status
 
       if (updateError) throw updateError;
@@ -50,17 +55,6 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </div>
       )}
 
-      {currentStatus === "EM_NEGOCIACAO" && (
-        <button
-          onClick={() => updateStatus("ACEITA")}
-          disabled={loading}
-          className="w-full py-4 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 disabled:opacity-50"
-        >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-          Aceitar Corrida
-        </button>
-      )}
-
       {currentStatus === "ACEITA" && (
         <button
           onClick={() => updateStatus("A_CAMINHO")}
@@ -74,7 +68,7 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
 
       {currentStatus === "A_CAMINHO" && (
         <button
-          onClick={() => updateStatus("NO_LOCAL")}
+          onClick={() => updateStatus("CHEGUEI")}
           disabled={loading}
           className="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-amber-500/90 active:scale-95 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
         >
@@ -83,9 +77,9 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </button>
       )}
 
-      {currentStatus === "NO_LOCAL" && (
+      {currentStatus === "CHEGUEI" && (
         <button
-          onClick={() => updateStatus("EM_ANDAMENTO")}
+          onClick={() => updateStatus("EM_CORRIDA")}
           disabled={loading}
           className="w-full py-4 bg-roxou-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-roxou-primary/90 active:scale-95 transition-all shadow-lg shadow-roxou-primary/20 disabled:opacity-50"
         >
@@ -94,7 +88,7 @@ export default function DriverStatusControls({ requestId, currentStatus }: Drive
         </button>
       )}
 
-      {currentStatus === "EM_ANDAMENTO" && (
+      {currentStatus === "EM_CORRIDA" && (
         <button
           onClick={() => updateStatus("FINALIZADA")}
           disabled={loading}

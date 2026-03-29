@@ -51,7 +51,12 @@ function NewRequestForm() {
 
   // Form State
   const [formData, setFormData] = useState({
-    origin: "",
+    pickup_address: "Minha Localização Atual",
+    pickup_lat: null as number | null,
+    pickup_lng: null as number | null,
+    destination_address: "",
+    destination_lat: null as number | null,
+    destination_lng: null as number | null,
     departure_time: "",
     notes: "",
     is_return: false,
@@ -76,7 +81,8 @@ function NewRequestForm() {
     if (destino || origem) {
       setFormData(prev => ({
         ...prev,
-        origin: destino || prev.origin,
+        destination_address: destino || prev.destination_address,
+        pickup_address: origem || prev.pickup_address,
         notes: origem ? `Saindo de: ${origem}. ${prev.notes}`.trim() : prev.notes
       }));
     }
@@ -118,6 +124,11 @@ function NewRequestForm() {
       return;
     }
 
+    if (!formData.destination_address) {
+      setError("Por favor, informe o destino.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -131,7 +142,11 @@ function NewRequestForm() {
       .from("transport_requests")
       .insert({
         passenger_id: user.id,
-        origin: formData.origin,
+        origin: formData.destination_address, // Keeping 'origin' as the destination string for backward compatibility if needed, but we should probably use a better name. Actually, let's stick to the schema.
+        origin_lat: formData.pickup_lat,
+        origin_lng: formData.pickup_lng,
+        destination_lat: formData.destination_lat,
+        destination_lng: formData.destination_lng,
         departure_time: formatForDB(formData.departure_time),
         notes: formData.notes,
         is_return: formData.is_return,
@@ -139,8 +154,8 @@ function NewRequestForm() {
         description: eventContext.nome ? { 
           evento_nome: eventContext.nome, 
           evento_id: eventContext.id,
-          origem: eventContext.origem,
-          destino: formData.origin
+          origem: formData.pickup_address,
+          destino: formData.destination_address
         } : null
       });
 
@@ -258,10 +273,31 @@ function NewRequestForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Pickup */}
+          <AddressSearch 
+            label="Local de Partida"
+            placeholder="Onde você está?"
+            value={formData.pickup_address}
+            onChange={(val, coords) => setFormData({ 
+              ...formData, 
+              pickup_address: val,
+              pickup_lat: coords?.lat ?? null,
+              pickup_lng: coords?.lng ?? null
+            })}
+            onOpenChange={setIsPickerOpen}
+          />
+
           {/* Destination */}
           <AddressSearch 
-            value={formData.origin}
-            onChange={(val) => setFormData({ ...formData, origin: val })}
+            label="Destino Final"
+            placeholder="Para onde você vai?"
+            value={formData.destination_address}
+            onChange={(val, coords) => setFormData({ 
+              ...formData, 
+              destination_address: val,
+              destination_lat: coords?.lat ?? null,
+              destination_lng: coords?.lng ?? null
+            })}
             onOpenChange={setIsPickerOpen}
             isEventPrefilled={!!eventContext.nome}
           />

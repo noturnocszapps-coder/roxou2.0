@@ -8,6 +8,8 @@ import Link from "next/link";
 import TimeAgo from "@/components/TimeAgo";
 import InterestButton from "@/components/InterestButton";
 import DriverStatusControls from "@/components/DriverStatusControls";
+import LiveRideMap from "@/components/Map/LiveRideMap";
+import DriverLocationTracker from "@/components/DriverLocationTracker";
 
 interface DriverRequestListProps {
   initialLeads: any[];
@@ -96,12 +98,18 @@ export default function DriverRequestList({
             <div className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest mb-2 inline-block ${
               req.status === 'ABERTA' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
               req.status === 'ACEITA' ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' :
+              req.status === 'A_CAMINHO' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
+              req.status === 'CHEGUEI' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' :
+              req.status === 'EM_CORRIDA' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
               req.status === 'EM_NEGOCIACAO' ? 'bg-roxou-primary/20 text-roxou-primary border border-roxou-primary/30' :
               req.status === 'FINALIZADA' ? 'bg-roxou-text-muted/20 text-roxou-text-muted border border-roxou-text-muted/30' :
               'bg-red-500/20 text-red-500 border border-red-500/30'
             }`}>
               {req.status === 'ABERTA' ? 'Aberto' : 
                req.status === 'ACEITA' ? 'Aceito' : 
+               req.status === 'A_CAMINHO' ? 'A Caminho' :
+               req.status === 'CHEGUEI' ? 'No Local' :
+               req.status === 'EM_CORRIDA' ? 'Em Corrida' :
                req.status === 'EM_NEGOCIACAO' ? 'Em Negociação' :
                req.status === 'FINALIZADA' ? 'Finalizado' : 'Cancelado'}
             </div>
@@ -191,7 +199,30 @@ export default function DriverRequestList({
         {req.status === 'ABERTA' ? (
           <InterestButton requestId={req.id} driverId={userId} passengerId={req.passenger_id} />
         ) : showControls ? (
-          <DriverStatusControls requestId={req.id} currentStatus={req.status} />
+          <div className="space-y-6">
+            {/* Live Map for Active Rides */}
+            {["ACEITA", "A_CAMINHO", "CHEGUEI", "EM_CORRIDA"].includes(req.status) && (
+              <div className="rounded-[24px] overflow-hidden border border-roxou-border h-[200px] relative z-10">
+                <LiveRideMap 
+                  requestId={req.id}
+                  status={req.status}
+                  pickup={{ lat: req.origin_lat || -23.9448, lng: req.origin_lng || -46.3303 }}
+                  destination={{ lat: req.destination_lat || -23.5273, lng: req.destination_lng || -46.6784 }}
+                  driverLocation={req.driver_lat && req.driver_lng ? { lat: req.driver_lat, lng: req.driver_lng } : undefined}
+                />
+              </div>
+            )}
+
+            {/* Location Tracker */}
+            {["ACEITA", "A_CAMINHO", "CHEGUEI", "EM_CORRIDA"].includes(req.status) && (
+              <DriverLocationTracker 
+                requestId={req.id} 
+                isActive={["A_CAMINHO", "CHEGUEI", "EM_CORRIDA"].includes(req.status)} 
+              />
+            )}
+
+            <DriverStatusControls requestId={req.id} currentStatus={req.status} driverId={userId} />
+          </div>
         ) : null}
       </div>
     );

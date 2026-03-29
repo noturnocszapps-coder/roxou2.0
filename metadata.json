@@ -1,5 +1,5 @@
 {
   "name": "Rebuild Roxou Transporte",
   "description": "Roxou transporte com integração com a drivedash, motoristas de aplicativo para festas e eventos em prudente",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["geolocation"]
 }

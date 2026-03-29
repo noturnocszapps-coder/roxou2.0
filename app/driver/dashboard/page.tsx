@@ -71,7 +71,7 @@ export default async function DriverDashboard() {
       *,
       passenger:profiles!transport_requests_passenger_id_fkey(full_name, avatar_url)
     `)
-    .in("status", ["ACEITA", "EM_NEGOCIACAO"])
+    .in("status", ["ACEITA", "A_CAMINHO", "CHEGUEI", "EM_CORRIDA", "EM_NEGOCIACAO"])
     .eq("driver_id", user.id)
     .order("updated_at", { ascending: false });
 

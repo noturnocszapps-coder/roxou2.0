@@ -9,6 +9,7 @@ import TimeAgo from "@/components/TimeAgo";
 import PassengerCancelButton from "@/components/PassengerCancelButton";
 import { motion, AnimatePresence } from "motion/react";
 import Skeleton from "@/components/Skeleton";
+import LiveRideMap from "@/components/Map/LiveRideMap";
 
 interface PassengerRequestListProps {
   initialRequests: any[];
@@ -21,8 +22,34 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
   const [connections, setConnections] = useState(initialConnections);
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
   const [loading, setLoading] = useState(true);
+  const [choosingDriverId, setChoosingDriverId] = useState<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
+
+  const handleChooseDriver = async (requestId: string, driverId: string) => {
+    setChoosingDriverId(driverId);
+    try {
+      // Update request status to ACEITA and assign driver_id
+      const { error } = await supabase
+        .from("transport_requests")
+        .update({
+          status: "ACEITA",
+          driver_id: driverId,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", requestId)
+        .eq("passenger_id", userId);
+
+      if (error) throw error;
+      
+      // Optionally update connection status if needed, but the request status is the primary source of truth
+      router.refresh();
+    } catch (err) {
+      console.error("Error choosing driver:", err);
+    } finally {
+      setChoosingDriverId(null);
+    }
+  };
 
   useEffect(() => {
     const channel = supabase
@@ -69,7 +96,7 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
     setLoading(false);
   }, [initialRequests, initialConnections]);
 
-  const activeRequests = requests.filter((r) => ["ABERTA", "EM_NEGOCIACAO", "ACEITA"].includes(r.status));
+  const activeRequests = requests.filter((r) => ["ABERTA", "EM_NEGOCIACAO", "ACEITA", "A_CAMINHO", "CHEGUEI", "EM_CORRIDA"].includes(r.status));
   const historyRequests = requests.filter((r) => ["FINALIZADA", "CANCELADA"].includes(r.status));
 
   const displayRequests = activeTab === "active" ? activeRequests : historyRequests;
@@ -163,7 +190,13 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
                             : req.status === "EM_NEGOCIACAO"
                             ? "bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary shadow-[0_0_10px_rgba(124,58,237,0.1)]"
                             : req.status === "ACEITA"
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+                            : req.status === "A_CAMINHO"
                             ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                            : req.status === "CHEGUEI"
+                            ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                            : req.status === "EM_CORRIDA"
+                            ? "bg-roxou-primary/10 border-roxou-primary/20 text-roxou-primary shadow-[0_0_10px_rgba(124,58,237,0.1)]"
                             : req.status === "FINALIZADA"
                             ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
                             : "bg-red-500/10 border-red-500/20 text-red-500"
@@ -172,12 +205,18 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
                         <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
                           req.status === "ABERTA" ? "bg-roxou-text-muted" :
                           req.status === "EM_NEGOCIACAO" ? "bg-roxou-primary" :
-                          req.status === "ACEITA" ? "bg-amber-500" :
+                          req.status === "ACEITA" ? "bg-emerald-500" :
+                          req.status === "A_CAMINHO" ? "bg-amber-500" :
+                          req.status === "CHEGUEI" ? "bg-amber-500" :
+                          req.status === "EM_CORRIDA" ? "bg-roxou-primary" :
                           req.status === "FINALIZADA" ? "bg-emerald-500" : "bg-red-500"
                         }`} />
                         {req.status === "ABERTA" ? "Aberto" : 
                          req.status === "EM_NEGOCIACAO" ? "Em Negociação" :
-                         req.status === "ACEITA" ? "Aceito" :
+                         req.status === "ACEITA" ? "Motorista Confirmado" :
+                         req.status === "A_CAMINHO" ? "A Caminho" :
+                         req.status === "CHEGUEI" ? "Cheguei no Local" :
+                         req.status === "EM_CORRIDA" ? "Em Corrida" :
                          req.status === "FINALIZADA" ? "Finalizado" : "Cancelado"}
                       </div>
                       {req.status === "ABERTA" && (
@@ -210,16 +249,32 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
                                     />
                                   </div>
                                   <div>
-                                    <p className="text-sm font-bold text-white">{conn.driver.full_name}</p>
-                                    <p className="text-[10px] text-roxou-primary font-black uppercase tracking-widest">Disponível</p>
+                                    <div className="flex items-center gap-1.5">
+                                      <p className="text-sm font-bold text-white">{conn.driver.full_name}</p>
+                                      {conn.driver.drivers?.[0]?.verification_status === 'approved' && (
+                                        <Shield className="w-2.5 h-2.5 text-roxou-primary" />
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-roxou-text-muted font-black uppercase tracking-widest">
+                                      {conn.driver.drivers?.[0]?.vehicle_model || "Motorista"}
+                                    </p>
                                   </div>
                                 </div>
-                                <Link 
-                                  href={`/chat/${conn.id}`}
-                                  className="px-4 py-2 bg-roxou-primary/10 hover:bg-roxou-primary text-roxou-primary hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                >
-                                  Abrir Conversa
-                                </Link>
+                                <div className="flex items-center gap-2">
+                                  <Link 
+                                    href={`/chat/${conn.id}`}
+                                    className="px-4 py-2 bg-roxou-surface border border-roxou-border hover:bg-roxou-surface/80 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                  >
+                                    Chat
+                                  </Link>
+                                  <button 
+                                    onClick={() => handleChooseDriver(req.id, conn.driver_id)}
+                                    disabled={choosingDriverId !== null}
+                                    className="px-4 py-2 bg-roxou-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 shadow-lg shadow-roxou-primary/20"
+                                  >
+                                    {choosingDriverId === conn.driver_id ? "..." : "Escolher"}
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -231,7 +286,7 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
                       </div>
                     ) : null}
 
-                    {req.status === "ACEITA" && req.driver && (
+                    {["ACEITA", "A_CAMINHO", "CHEGUEI", "EM_CORRIDA"].includes(req.status) && req.driver && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -257,11 +312,38 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
                               </div>
                             )}
                           </div>
-                          <p className="text-[10px] uppercase font-black tracking-[0.2em] text-roxou-primary">
-                            Motorista aceitou seu pedido
+                          <p className="text-[10px] uppercase font-black tracking-[0.2em] text-roxou-primary mb-2">
+                            {req.status === "ACEITA" ? "Motorista confirmado" :
+                             req.status === "A_CAMINHO" ? "Motorista a caminho" :
+                             req.status === "CHEGUEI" ? "Motorista no local" :
+                             req.status === "EM_CORRIDA" ? "Corrida em andamento" : "Motorista parceiro"}
                           </p>
+                          <div className="flex items-center gap-4">
+                            <Link 
+                              href={`/chat/${connections.find(c => c.request_id === req.id && c.driver_id === req.driver_id)?.id}`}
+                              className="px-4 py-2 bg-roxou-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105"
+                            >
+                              Abrir Chat
+                            </Link>
+                            <div className="text-[10px] text-roxou-text-muted font-bold uppercase tracking-widest">
+                              {req.driver.drivers?.[0]?.vehicle_model} • {req.driver.drivers?.[0]?.vehicle_plate}
+                            </div>
+                          </div>
                         </div>
                       </motion.div>
+                    )}
+
+                    {/* Live Map for Active Rides */}
+                    {["ACEITA", "A_CAMINHO", "CHEGUEI", "EM_CORRIDA"].includes(req.status) && (
+                      <div className="mb-6 rounded-[24px] overflow-hidden border border-roxou-border h-[200px] relative z-10">
+                        <LiveRideMap 
+                          requestId={req.id}
+                          status={req.status}
+                          pickup={{ lat: req.origin_lat || -23.9448, lng: req.origin_lng || -46.3303 }}
+                          destination={{ lat: req.destination_lat || -23.5273, lng: req.destination_lng || -46.6784 }}
+                          driverLocation={req.driver_lat && req.driver_lng ? { lat: req.driver_lat, lng: req.driver_lng } : undefined}
+                        />
+                      </div>
                     )}
                     <div className="space-y-4 mb-6 relative z-10">
                       <div className="flex items-start gap-4">

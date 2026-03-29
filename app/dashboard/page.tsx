@@ -20,7 +20,7 @@ export default async function PassengerDashboard() {
       driver:profiles!transport_requests_driver_id_fkey(
         full_name, 
         avatar_url,
-        drivers:drivers(verification_status)
+        drivers:drivers(verification_status, vehicle_model, vehicle_plate)
       )
     `)
     .eq("passenger_id", user.id)
@@ -31,10 +31,11 @@ export default async function PassengerDashboard() {
     .from("connections")
     .select(`
       *,
+      request:transport_requests(*),
       driver:profiles!connections_driver_id_fkey(
         full_name, 
         avatar_url,
-        drivers:drivers(verification_status)
+        drivers:drivers(verification_status, vehicle_model, vehicle_plate)
       )
     `)
     .eq("passenger_id", user.id);

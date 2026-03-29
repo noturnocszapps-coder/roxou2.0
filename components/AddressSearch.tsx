@@ -6,7 +6,7 @@ import { MapPin, Search, X, Navigation, History, Star, ChevronRight, Zap } from 
 
 interface AddressSearchProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, coords?: { lat: number, lng: number }) => void;
   onOpenChange?: (isOpen: boolean) => void;
   placeholder?: string;
   label?: string;
@@ -15,11 +15,11 @@ interface AddressSearchProps {
 
 // Mock suggestions for the ride-hailing experience
 const MOCK_SUGGESTIONS = [
-  { id: "1", name: "Arena Club", address: "Av. Senador Pinheiro Machado, 33 - Santos", type: "recent" },
-  { id: "2", name: "Bar do Juarez", address: "R. Joaquim Távora, 1095 - Vila Mariana, SP", type: "recent" },
-  { id: "3", name: "Allianz Parque", address: "Av. Francisco Matarazzo, 1705 - Água Branca, SP", type: "popular" },
-  { id: "4", name: "Aeroporto de Congonhas", address: "Av. Washington Luís, s/n - Vila Congonhas, SP", type: "popular" },
-  { id: "5", name: "Shopping Ibirapuera", address: "Av. Ibirapuera, 3103 - Indianópolis, SP", type: "popular" },
+  { id: "1", name: "Arena Club", address: "Av. Senador Pinheiro Machado, 33 - Santos", type: "recent", lat: -23.9448, lng: -46.3303 },
+  { id: "2", name: "Bar do Juarez", address: "R. Joaquim Távora, 1095 - Vila Mariana, SP", type: "recent", lat: -23.5885, lng: -46.6432 },
+  { id: "3", name: "Allianz Parque", address: "Av. Francisco Matarazzo, 1705 - Água Branca, SP", type: "popular", lat: -23.5273, lng: -46.6784 },
+  { id: "4", name: "Aeroporto de Congonhas", address: "Av. Washington Luís, s/n - Vila Congonhas, SP", type: "popular", lat: -23.6273, lng: -46.6565 },
+  { id: "5", name: "Shopping Ibirapuera", address: "Av. Ibirapuera, 3103 - Indianópolis, SP", type: "popular", lat: -23.6104, lng: -46.6667 },
 ];
 
 export default function AddressSearch({ 
@@ -60,14 +60,24 @@ export default function AddressSearch({
   };
 
   const handleSelect = (suggestion: typeof MOCK_SUGGESTIONS[0]) => {
-    onChange(suggestion.name);
+    onChange(suggestion.name, { lat: suggestion.lat, lng: suggestion.lng });
     setIsOpen(false);
     setSearchQuery("");
   };
 
   const handleUseCurrentLocation = () => {
-    onChange("Minha Localização Atual");
-    setIsOpen(false);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        onChange("Minha Localização Atual", { lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setIsOpen(false);
+      }, () => {
+        onChange("Minha Localização Atual");
+        setIsOpen(false);
+      });
+    } else {
+      onChange("Minha Localização Atual");
+      setIsOpen(false);
+    }
   };
 
   return (
