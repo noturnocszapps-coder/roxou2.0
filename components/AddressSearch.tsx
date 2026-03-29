@@ -188,7 +188,8 @@ export default function AddressSearch({
   };
 
   const isLocalResult = (placeName: string) => {
-    return placeName.toLowerCase().includes("presidente prudente");
+    const localCities = ["Presidente Prudente", "Álvares Machado", "Pirapozinho", "Regente Feijó", "Tarabai", "Anhumas"];
+    return localCities.some(city => placeName.toLowerCase().includes(city.toLowerCase()));
   };
 
   return (
@@ -383,7 +384,7 @@ export default function AddressSearch({
                           <p className="font-bold text-white truncate">{s.place_name.split(',')[0]}</p>
                           {isLocalResult(s.place_name) && (
                             <span className="text-[8px] font-black bg-roxou-primary/20 text-roxou-primary px-1.5 py-0.5 rounded-full uppercase tracking-widest border border-roxou-primary/30">
-                              Mais próximo
+                              Local
                             </span>
                           )}
                         </div>
