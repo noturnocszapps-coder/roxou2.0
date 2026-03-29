@@ -46,6 +46,7 @@ export default function AddressSearch({
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [recentPlaces, setRecentPlaces] = useState<RecentPlace[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -123,9 +124,17 @@ export default function AddressSearch({
     }
 
     setLoading(true);
-    const results = await searchAddress(query, userLocation || undefined);
-    setSuggestions(results);
-    setLoading(false);
+    setError(null);
+    try {
+      const results = await searchAddress(query, userLocation || undefined);
+      setSuggestions(results);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setError("Erro ao buscar localização");
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
   }, [userLocation]);
 
   const handleSearch = (query: string) => {
@@ -179,8 +188,7 @@ export default function AddressSearch({
   };
 
   const isLocalResult = (placeName: string) => {
-    const localCities = ["Presidente Prudente", "Prudente", "Álvares Machado", "Pirapozinho", "Regente Feijó"];
-    return localCities.some(city => placeName.toLowerCase().includes(city.toLowerCase()));
+    return placeName.toLowerCase().includes("presidente prudente");
   };
 
   return (
@@ -268,6 +276,12 @@ export default function AddressSearch({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32">
+              {error && (
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center animate-shake">
+                  {error}
+                </div>
+              )}
+
               {!searchQuery && (
                 <>
                   <div className="space-y-4">
@@ -369,7 +383,7 @@ export default function AddressSearch({
                           <p className="font-bold text-white truncate">{s.place_name.split(',')[0]}</p>
                           {isLocalResult(s.place_name) && (
                             <span className="text-[8px] font-black bg-roxou-primary/20 text-roxou-primary px-1.5 py-0.5 rounded-full uppercase tracking-widest border border-roxou-primary/30">
-                              Local
+                              Mais próximo
                             </span>
                           )}
                         </div>
