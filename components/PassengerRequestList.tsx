@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Clock, MapPin, Zap, History, LayoutDashboard, ChevronRight, Shield } from "lucide-react";
+import { sendNotification } from "@/lib/notifications";
 import TimeAgo from "@/components/TimeAgo";
 import PassengerCancelButton from "@/components/PassengerCancelButton";
 import { motion, AnimatePresence } from "motion/react";
@@ -42,6 +43,15 @@ export default function PassengerRequestList({ initialRequests, initialConnectio
 
       if (error) throw error;
       
+      // Notify driver
+      await sendNotification({
+        userId: driverId,
+        type: 'CHOSEN',
+        title: 'Você foi escolhido! 🎉',
+        body: 'O passageiro confirmou a corrida com você. Prepare-se para partir!',
+        data: { requestId }
+      });
+
       // Optionally update connection status if needed, but the request status is the primary source of truth
       router.refresh();
     } catch (err) {

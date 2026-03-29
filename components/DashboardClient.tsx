@@ -10,6 +10,7 @@ import LightOnboarding from "@/components/LightOnboarding";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import Skeleton from "@/components/Skeleton";
+import NotificationCenter from "@/components/NotificationCenter";
 
 export default function DashboardClient({ user, requests, connections }: { user: any, requests: any[], connections: any[] }) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -38,7 +39,8 @@ export default function DashboardClient({ user, requests, connections }: { user:
             </div>
             <span className="text-xl font-display font-black tracking-tighter text-white">ROXOU</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <NotificationCenter userId={user.id} />
             <LogoutButton />
             <Link 
               href="/profile"

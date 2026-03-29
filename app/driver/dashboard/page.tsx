@@ -5,6 +5,8 @@ import { Zap, MapPin, Clock, MessageSquare, ChevronRight, Star, Users, Navigatio
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
 import LiveIndicators from "@/components/LiveIndicators";
+import NotificationCenter from "@/components/NotificationCenter";
+import RealTimeNotification from "@/components/RealTimeNotification";
 import TimeAgo from "@/components/TimeAgo";
 import AcceptRequestButton from "@/components/AcceptRequestButton";
 import DriverRequestList from "@/components/DriverRequestList";
@@ -99,6 +101,7 @@ export default async function DriverDashboard() {
 
   return (
     <div className="min-h-screen bg-roxou-bg pb-20">
+      <RealTimeNotification />
       {/* Header */}
       <header className="glass sticky top-0 z-40 py-4 px-6">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
@@ -107,6 +110,7 @@ export default async function DriverDashboard() {
             <span className="text-xl font-display font-bold tracking-tighter text-white">ROXOU</span>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationCenter userId={user.id} />
             <div className="text-right hidden sm:block">
               <p className="text-[10px] text-roxou-text-muted">Status: Aprovado</p>
             </div>

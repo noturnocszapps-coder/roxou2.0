@@ -32,11 +32,30 @@ export const DriverIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
+export const UserLocationIcon = L.divIcon({
+  className: 'user-location-icon',
+  html: `<div style="position: relative; width: 20px; height: 20px; display: flex; align-items: center; justify-center;">
+    <div style="position: absolute; width: 100%; height: 100%; background-color: #7c3aed; border-radius: 50%; opacity: 0.4; animation: pulse 2s infinite;"></div>
+    <div style="position: relative; width: 10px; height: 10px; background-color: #7c3aed; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #7c3aed;"></div>
+  </div>
+  <style>
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.4; }
+      70% { transform: scale(2.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+  </style>`,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
+
 interface BaseMapProps {
   center?: [number, number];
   zoom?: number;
   children?: React.ReactNode;
   className?: string;
+  showUserLocation?: boolean;
+  userLocation?: [number, number] | null;
 }
 
 function MapUpdater({ center, zoom }: { center?: [number, number], zoom?: number }) {
@@ -53,7 +72,9 @@ export default function BaseMap({
   center = [-22.1225, -51.3852], // Default to Presidente Prudente
   zoom = 13, 
   children,
-  className = "h-full w-full"
+  className = "h-full w-full",
+  showUserLocation = false,
+  userLocation = null
 }: BaseMapProps) {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -83,6 +104,9 @@ export default function BaseMap({
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         <MapUpdater center={center} zoom={zoom} />
+        {showUserLocation && userLocation && (
+          <Marker position={userLocation} icon={UserLocationIcon} />
+        )}
         {children}
       </MapContainer>
     </div>

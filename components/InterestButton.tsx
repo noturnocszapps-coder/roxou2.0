@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Zap, Loader2, CheckCircle2 } from "lucide-react";
+import { sendNotification } from "@/lib/notifications";
 
 interface InterestButtonProps {
   requestId: string;
@@ -76,6 +77,15 @@ export default function InterestButton({ requestId, driverId, passengerId }: Int
         .eq("id", requestId);
 
       if (updateError) throw updateError;
+
+      // 5. Notify passenger
+      await sendNotification({
+        userId: passengerId,
+        type: 'INTEREST',
+        title: 'Novo motorista interessado! ⚡',
+        body: 'Um motorista demonstrou interesse na sua corrida. Confira no chat!',
+        data: { requestId, connectionId: newConnection.id }
+      });
 
       setSuccess(true);
       

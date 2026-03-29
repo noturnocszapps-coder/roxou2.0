@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Send, Zap, ShieldAlert, Info, Loader2 } from "lucide-react";
+import { sendNotification } from "@/lib/notifications";
 import Link from "next/link";
 import DriverStatusControls from "@/components/DriverStatusControls";
 
@@ -132,6 +133,16 @@ export default function ChatPage() {
 
     if (error) {
       console.error("Error sending message:", error);
+    } else {
+      // Notify recipient
+      const recipientId = currentUser.id === connection.passenger_id ? connection.driver_id : connection.passenger_id;
+      await sendNotification({
+        userId: recipientId,
+        type: 'CHAT',
+        title: `Nova mensagem de ${currentUser.user_metadata.full_name || 'Usuário'} 💬`,
+        body: msg.length > 50 ? msg.substring(0, 47) + '...' : msg,
+        data: { connectionId }
+      });
     }
   };
 

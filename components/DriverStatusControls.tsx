@@ -4,14 +4,16 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Play, CheckCircle2, Loader2, AlertCircle, Navigation, MapPin } from "lucide-react";
+import { sendNotification } from "@/lib/notifications";
 
 interface DriverStatusControlsProps {
   requestId: string;
   currentStatus: string;
   driverId: string;
+  passengerId?: string; // Optional: if passed, we use it directly
 }
 
-export default function DriverStatusControls({ requestId, currentStatus, driverId }: DriverStatusControlsProps) {
+export default function DriverStatusControls({ requestId, currentStatus, driverId, passengerId }: DriverStatusControlsProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
@@ -22,6 +24,18 @@ export default function DriverStatusControls({ requestId, currentStatus, driverI
     setError(null);
 
     try {
+      // 1. Fetch passengerId if not provided
+      let targetPassengerId = passengerId;
+      if (!targetPassengerId) {
+        const { data: reqData } = await supabase
+          .from("transport_requests")
+          .select("passenger_id")
+          .eq("id", requestId)
+          .single();
+        targetPassengerId = reqData?.passenger_id;
+      }
+
+      // 2. Update status
       const { error: updateError } = await supabase
         .from("transport_requests")
         .update({ 
@@ -29,10 +43,38 @@ export default function DriverStatusControls({ requestId, currentStatus, driverI
           updated_at: new Date().toISOString()
         })
         .eq("id", requestId)
-        .eq("driver_id", driverId) // Safety: only the chosen driver can update
-        .eq("status", currentStatus); // Ensure we are updating from the expected status
+        .eq("driver_id", driverId)
+        .eq("status", currentStatus);
 
       if (updateError) throw updateError;
+
+      // 3. Notify passenger
+      if (targetPassengerId) {
+        let title = "Atualização na sua corrida! 🚗";
+        let body = `O status da sua corrida mudou para: ${newStatus}`;
+
+        if (newStatus === 'A_CAMINHO') {
+          title = "Motorista a caminho! 🚗";
+          body = "O motorista já está vindo te buscar. Fique atento!";
+        } else if (newStatus === 'CHEGUEI') {
+          title = "Motorista no local! 📍";
+          body = "O motorista acabou de chegar no ponto de encontro.";
+        } else if (newStatus === 'EM_CORRIDA') {
+          title = "Viagem iniciada! 🏁";
+          body = "Sua viagem começou. Aproveite o rolê Roxou!";
+        } else if (newStatus === 'FINALIZADA') {
+          title = "Viagem finalizada! ✨";
+          body = "Você chegou ao seu destino. Obrigado por usar o Roxou!";
+        }
+
+        await sendNotification({
+          userId: targetPassengerId,
+          type: 'STATUS_CHANGE',
+          title,
+          body,
+          data: { requestId, newStatus }
+        });
+      }
 
       router.refresh();
     } catch (err: any) {

@@ -15,38 +15,21 @@ export default function RealTimeNotification() {
       if (!user) return;
 
       const channel = supabase
-        .channel('realtime_notifications')
+        .channel(`realtime_toasts_${user.id}`)
         .on(
           'postgres_changes',
           {
-            event: 'UPDATE',
+            event: 'INSERT',
             schema: 'public',
-            table: 'transport_requests',
-            filter: `passenger_id=eq.${user.id}`,
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            const oldStatus = payload.old.status;
-            const newStatus = payload.new.status;
-
-            if (oldStatus === 'open' && newStatus === 'accepted') {
-              setNotification({
-                title: 'Motorista a caminho! 🚗',
-                message: 'Seu pedido foi aceito. Combine os detalhes no chat.',
-                type: 'success'
-              });
-            } else if (oldStatus === 'accepted' && newStatus === 'in_progress') {
-              setNotification({
-                title: 'Viagem iniciada! 🏁',
-                message: 'Aproveite o seu rolê Roxou.',
-                type: 'info'
-              });
-            } else if (oldStatus === 'in_progress' && newStatus === 'completed') {
-              setNotification({
-                title: 'Chegamos! ✨',
-                message: 'Sua viagem foi finalizada com sucesso.',
-                type: 'success'
-              });
-            }
+            setNotification({
+              title: payload.new.title,
+              message: payload.new.body,
+              type: payload.new.type === 'CHOSEN' ? 'success' : 'info'
+            });
           }
         )
         .subscribe();

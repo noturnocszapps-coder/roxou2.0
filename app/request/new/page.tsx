@@ -63,6 +63,28 @@ function NewRequestForm() {
     accepted_terms: false,
   });
 
+  // Auto-geocode current location on mount if it's the default pickup address
+  useEffect(() => {
+    if (formData.pickup_address === "Minha Localização Atual" && !formData.pickup_lat) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          
+          const { reverseGeocode } = await import("@/lib/mapbox");
+          const address = await reverseGeocode(lat, lng);
+          
+          setFormData(prev => ({
+            ...prev,
+            pickup_address: address || "Minha Localização Atual",
+            pickup_lat: lat,
+            pickup_lng: lng
+          }));
+        });
+      }
+    }
+  }, [formData.pickup_address, formData.pickup_lat]);
+
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   // Event Context State
@@ -210,7 +232,7 @@ function NewRequestForm() {
     );
   }
 
-  const isReady = formData.origin && formData.departure_time && formData.accepted_terms;
+  const isReady = formData.destination_address && formData.departure_time && formData.accepted_terms;
 
   return (
     <div className="min-h-screen bg-roxou-bg pb-44">
