@@ -35,9 +35,11 @@ export default async function DriverDashboard() {
     .order("created_at", { ascending: false });
 
   const driver = drivers && drivers.length > 0 ? drivers[0] : null;
-
   const role = profile?.role;
-  const verificationStatus = driver?.verification_status;
+  const verification_status = driver?.verification_status;
+
+  // Debug log for validation
+  console.log('DRIVER STATUS:', verification_status);
 
   // 1. if not driver -> redirect("/")
   if (role !== "driver") {
@@ -45,7 +47,7 @@ export default async function DriverDashboard() {
   }
 
   // 2. if not approved -> redirect("/driver/onboarding")
-  if (verificationStatus !== "approved") {
+  if (verification_status !== "approved") {
     redirect("/driver/onboarding");
   }
 

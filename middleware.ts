@@ -56,8 +56,12 @@ export async function middleware(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     const driver = drivers && drivers.length > 0 ? drivers[0] : null;
-    const verificationStatus = driver?.verification_status;
-    const isApproved = verificationStatus === "approved";
+    const verification_status = driver?.verification_status;
+
+    // Debug log for validation
+    console.log('DRIVER STATUS:', verification_status);
+
+    const isApproved = verification_status === "approved";
 
     if (isApproved) {
       // Approved driver:

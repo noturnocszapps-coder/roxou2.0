@@ -6,15 +6,15 @@ import DriverLogoutButton from "./DriverLogoutButton";
 interface DriverOnboardingStatusProps {
   role: string | null;
   driverFound: boolean;
-  verificationStatus: string | null;
+  verification_status: string | null;
 }
 
 export default function DriverOnboardingStatus({
   role,
   driverFound,
-  verificationStatus,
+  verification_status,
 }: DriverOnboardingStatusProps) {
-  const isRejected = verificationStatus === "rejected";
+  const isRejected = verification_status === "rejected";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-roxou-bg relative overflow-hidden pointer-events-none">

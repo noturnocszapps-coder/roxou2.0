@@ -23,56 +23,72 @@ export default function InterestButton({ requestId, driverId, passengerId }: Int
     setError(null);
 
     try {
-      // 1. Check if connection already exists to prevent duplicates
-      const { data: existingConn } = await supabase
+      // 1. Validate driver is approved
+      const { data: driver, error: driverError } = await supabase
+        .from("drivers")
+        .select("verification_status")
+        .eq("user_id", driverId)
+        .single();
+
+      if (driverError || driver?.verification_status !== 'approved') {
+        setError("Sua conta ainda não foi aprovada para aceitar pedidos.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Prevent duplicate connection
+      const { data: existingConnection, error: connError } = await supabase
         .from("connections")
         .select("id")
         .eq("request_id", requestId)
         .eq("driver_id", driverId)
         .maybeSingle();
 
-      if (existingConn) {
-        router.push(`/chat/${existingConn.id}`);
+      if (existingConnection) {
+        // Redirect to existing chat
+        router.push(`/chat/${existingConnection.id}`);
         return;
       }
 
-      // 2. Create connection
-      const { data: connData, error: connError } = await supabase
+      // 3. Create connection
+      const { data: newConnection, error: insertError } = await supabase
         .from("connections")
         .insert({
-          passenger_id: passengerId,
-          driver_id: driverId,
           request_id: requestId,
-          status: "active"
+          driver_id: driverId,
+          passenger_id: passengerId,
+          status: 'active',
+          created_at: new Date().toISOString()
         })
         .select()
         .single();
 
-      if (connError) throw connError;
+      if (insertError) throw insertError;
 
-      // 3. Update request status to EM_NEGOCIACAO if it's still ABERTA
+      // 4. Update request status
+      // We also assign the driver_id to the request to move it to the driver's active list
       const { error: updateError } = await supabase
         .from("transport_requests")
-        .update({ status: "EM_NEGOCIACAO" })
-        .eq("id", requestId)
-        .eq("status", "ABERTA");
+        .update({ 
+          status: 'EM_NEGOCIACAO',
+          driver_id: driverId 
+        })
+        .eq("id", requestId);
 
-      // We don't throw if updateError because the connection is already created
-      // and someone else might have already updated the status to EM_NEGOCIACAO
-      if (updateError) {
-        console.warn("Could not update status to EM_NEGOCIACAO, might already be updated:", updateError);
-      }
+      if (updateError) throw updateError;
 
       setSuccess(true);
-      router.refresh();
       
-      // Redirect to chat
+      // 5. Redirect to chat
+      // Small delay to show success state
       setTimeout(() => {
-        router.push(`/chat/${connData.id}`);
+        router.push(`/chat/${newConnection.id}`);
       }, 1000);
 
     } catch (err: any) {
-      setError(err.message || "Erro ao expressar interesse.");
+      console.error("Error creating interest:", err);
+      setError("Ocorreu um erro ao processar seu interesse. Tente novamente.");
+    } finally {
       setLoading(false);
     }
   };
@@ -89,7 +105,7 @@ export default function InterestButton({ requestId, driverId, passengerId }: Int
   return (
     <div className="space-y-3 w-full">
       {error && (
-        <p className="text-xs text-red-500 font-bold text-center bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+        <p className="text-xs text-roxou-primary font-bold text-center bg-roxou-primary/10 py-2 rounded-lg border border-roxou-primary/20">
           {error}
         </p>
       )}
@@ -105,6 +121,9 @@ export default function InterestButton({ requestId, driverId, passengerId }: Int
         )}
         {loading ? "Processando..." : "Tenho interesse"}
       </button>
+      <p className="text-[10px] text-roxou-text-muted text-center font-bold uppercase tracking-widest opacity-50">
+        Próxima etapa: Chat de negociação
+      </p>
     </div>
   );
 }

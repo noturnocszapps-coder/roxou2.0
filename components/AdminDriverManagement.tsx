@@ -49,6 +49,16 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   
   // Normalize defensively
   const normalizedDrivers = (initialDrivers || []).map((p: any) => {
+    // If it's already formatted (from AdminDashboard), use it directly
+    if (p.verification_status !== undefined) {
+      return {
+        ...p,
+        full_name: p.full_name || "Sem nome",
+        verification_status: p.verification_status || "pending"
+      };
+    }
+
+    // Fallback for raw profile + drivers join
     const driverData = Array.isArray(p.drivers)
       ? p.drivers[0]
       : p.drivers || null;
@@ -83,6 +93,8 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showBulkConfirm, setShowBulkConfirm] = useState<{ status: "approved" | "rejected", count: number } | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [cardError, setCardError] = useState<{id: string, message: string} | null>(null);
 
   const filteredDrivers = normalizedDrivers.filter(d => {
     const matchesFilter = d.verification_status === filter;
@@ -93,50 +105,80 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
   });
 
   const handleUpdateStatus = async (driverId: string, status: string, note?: string) => {
+    setCardError(null);
     setActionLoading(driverId);
-    // CRITICAL: Using .from("drivers") as requested
-    const { error } = await supabase
-      .from("drivers")
-      .upsert({
-        user_id: driverId,
-        verification_status: status,
-        admin_review_note: note,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
+    console.log(`[Admin] Updating status for driver ${driverId} to ${status}`);
 
-    if (!error) {
-      router.refresh();
+    try {
+      const { error } = await supabase
+        .from("drivers")
+        .upsert({
+          user_id: driverId,
+          verification_status: status,
+          admin_review_note: note,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error("[Admin] Error updating driver status:", error);
+        setCardError({ id: driverId, message: error.message });
+      } else {
+        console.log("[Admin] Driver status updated successfully");
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error("[Admin] Unexpected error updating driver status:", err);
+      setCardError({ id: driverId, message: err.message || "Erro inesperado" });
+    } finally {
+      setActionLoading(null);
     }
-    setActionLoading(null);
   };
 
   const handleBulkAction = async (status: "approved" | "rejected") => {
     const driversToUpdate = filteredDrivers.map(d => d.id);
     if (driversToUpdate.length === 0) return;
 
+    setModalError(null);
     setShowBulkConfirm({ status, count: driversToUpdate.length });
   };
 
   const confirmBulkAction = async () => {
-    if (!showBulkConfirm) return;
-    const { status, count } = showBulkConfirm;
+    if (!showBulkConfirm || actionLoading === "bulk") return;
+    
+    const { status } = showBulkConfirm;
     const driversToUpdate = filteredDrivers.map(d => d.id);
     
-    setShowBulkConfirm(null);
+    setModalError(null);
     setActionLoading("bulk");
-    // CRITICAL: Using .from("drivers") as requested
-    const { error } = await supabase
-      .from("drivers")
-      .upsert(driversToUpdate.map(id => ({
-        user_id: id,
-        verification_status: status,
-        updated_at: new Date().toISOString()
-      })));
+    console.log(`[Admin] Starting bulk ${status} for ${driversToUpdate.length} drivers`);
 
-    if (!error) {
-      router.refresh();
+    try {
+      const { error } = await supabase
+        .from("drivers")
+        .upsert(
+          driversToUpdate.map(id => ({
+            user_id: id,
+            verification_status: status,
+            updated_at: new Date().toISOString()
+          })),
+          { onConflict: 'user_id' }
+        );
+
+      console.log("[Admin] Bulk action response:", { error });
+
+      if (error) {
+        setModalError("Erro ao atualizar motoristas: " + error.message);
+        setActionLoading(null);
+      } else {
+        router.refresh();
+        setActionLoading(null);
+        setShowBulkConfirm(null);
+      }
+    } catch (err: any) {
+      console.error("[Admin] Unexpected error in bulk action:", err);
+      setModalError("Erro inesperado: " + (err.message || "Tente novamente"));
+      setActionLoading(null);
     }
-    setActionLoading(null);
   };
 
   const tabs = [
@@ -245,19 +287,29 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
               </span> todos os <span className="text-white font-bold">{showBulkConfirm.count}</span> motoristas filtrados?
             </p>
 
+            {modalError && (
+              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                <p className="text-xs text-red-500 font-medium">{modalError}</p>
+              </div>
+            )}
+
             <div className="flex items-center gap-4">
               <button 
+                disabled={actionLoading === "bulk"}
                 onClick={() => setShowBulkConfirm(null)}
-                className="flex-1 px-6 py-4 rounded-2xl bg-roxou-bg border border-roxou-border text-[10px] font-black uppercase tracking-widest hover:bg-roxou-surface transition-all"
+                className="flex-1 px-6 py-4 rounded-2xl bg-roxou-bg border border-roxou-border text-[10px] font-black uppercase tracking-widest hover:bg-roxou-surface transition-all disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button 
+                disabled={actionLoading === "bulk"}
                 onClick={confirmBulkAction}
-                className={`flex-1 px-6 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl ${
+                className={`flex-1 px-6 py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-2 ${
                   showBulkConfirm.status === 'approved' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20' : 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
-                }`}
+                } disabled:opacity-50`}
               >
+                {actionLoading === "bulk" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Confirmar
               </button>
             </div>
@@ -360,6 +412,13 @@ export default function AdminDriverManagement({ initialDrivers }: { initialDrive
 
                 {/* Bottom Section: Moderation Actions */}
                 <div className="pt-6 border-t border-roxou-border/50 space-y-6">
+                  {cardError?.id === driver.id && (
+                    <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
+                      <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                      <p className="text-xs text-red-500 font-medium">{cardError.message}</p>
+                    </div>
+                  )}
+                  
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                     <div className="flex-grow relative group/input">
                       <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-roxou-text-muted group-focus-within/input:text-roxou-primary transition-colors" />

@@ -114,12 +114,35 @@ export default function DriverRequestList({
         </div>
 
         {eventContext?.evento_nome && (
-          <div className="mb-6 p-4 rounded-2xl bg-roxou-primary/5 border border-roxou-primary/20 flex items-center gap-3">
-            <Zap className="w-5 h-5 text-roxou-primary fill-current" />
-            <div>
-              <p className="text-[10px] text-roxou-primary font-black uppercase tracking-widest">Indo para o evento</p>
-              <p className="text-sm font-bold text-white">{eventContext.evento_nome}</p>
+          <div className="mb-6 p-4 rounded-2xl bg-roxou-primary/5 border border-roxou-primary/20 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <Zap className="w-5 h-5 text-roxou-primary fill-current" />
+              <div>
+                <p className="text-[10px] text-roxou-primary font-black uppercase tracking-widest">Indo para o evento</p>
+                <p className="text-sm font-bold text-white">{eventContext.evento_nome}</p>
+              </div>
             </div>
+            
+            {(eventContext.origem || eventContext.destino) && (
+              <div className="grid grid-cols-1 gap-2 pt-3 border-t border-roxou-primary/10">
+                {eventContext.origem && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-roxou-primary" />
+                    <p className="text-[10px] text-roxou-text-muted font-medium">
+                      Origem: <span className="text-white">{eventContext.origem}</span>
+                    </p>
+                  </div>
+                )}
+                {eventContext.destino && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <p className="text-[10px] text-roxou-text-muted font-medium">
+                      Destino: <span className="text-white">{eventContext.destino}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

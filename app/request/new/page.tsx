@@ -138,7 +138,9 @@ function NewRequestForm() {
         status: "ABERTA",
         description: eventContext.nome ? { 
           evento_nome: eventContext.nome, 
-          evento_id: eventContext.id 
+          evento_id: eventContext.id,
+          origem: eventContext.origem,
+          destino: formData.origin
         } : null
       });
 
