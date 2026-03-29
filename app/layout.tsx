@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import { ToastProvider } from "@/components/Toast";
+import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,9 +27,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

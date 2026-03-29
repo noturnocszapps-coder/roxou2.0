@@ -2,7 +2,25 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MapPin, Search, X, Navigation, History, Star, ChevronRight, Zap, Loader2, Clock } from "lucide-react";
+import { 
+  MapPin, 
+  Search, 
+  X, 
+  Navigation, 
+  History, 
+  Star, 
+  ChevronRight, 
+  Zap, 
+  Loader2, 
+  Clock,
+  Building2,
+  ShoppingBag,
+  Trees,
+  Palette,
+  Moon,
+  GlassWater,
+  Music
+} from "lucide-react";
 import { searchAddress, reverseGeocode, type MapboxFeature } from "@/lib/mapbox";
 
 interface RecentPlace {
@@ -12,11 +30,23 @@ interface RecentPlace {
   timestamp: number;
 }
 
-const SUGGESTED_PLACES = [
-  { name: "Parque do Povo", lat: -22.1225, lng: -51.4032 },
-  { name: "Prudenshopping", lat: -22.1158, lng: -51.4068 },
-  { name: "Centro", lat: -22.1225, lng: -51.3852 },
-  { name: "Matarazzo", lat: -22.1189, lng: -51.3814 },
+const POPULAR_PLACES_DAY = [
+  { name: "Prudenshopping", lat: -22.1158, lng: -51.4068, icon: ShoppingBag },
+  { name: "Parque do Povo", lat: -22.1225, lng: -51.4032, icon: Trees },
+  { name: "Centro", lat: -22.1225, lng: -51.3852, icon: Building2 },
+  { name: "Matarazzo", lat: -22.1189, lng: -51.3814, icon: Palette },
+];
+
+const POPULAR_PLACES_NIGHT = [
+  { name: "Parque do Povo", lat: -22.1225, lng: -51.4032, icon: Moon },
+  { name: "Euromarket", lat: -22.1285, lng: -51.4055, icon: GlassWater },
+  { name: "Vila Real", lat: -22.1100, lng: -51.3900, icon: Music },
+  { name: "Prudenshopping", lat: -22.1158, lng: -51.4068, icon: ShoppingBag },
+];
+
+const ROXOU_EVENTS = [
+  { name: "Roxou Arena - Show Sertanejo", lat: -22.1300, lng: -51.4100, icon: Zap, isEvent: true },
+  { name: "Festa Universitária", lat: -22.1400, lng: -51.4200, icon: Zap, isEvent: true },
 ];
 
 interface AddressSearchProps {
@@ -192,6 +222,13 @@ export default function AddressSearch({
     return localCities.some(city => placeName.toLowerCase().includes(city.toLowerCase()));
   };
 
+  const isNight = () => {
+    const hour = new Date().getHours();
+    return hour >= 18 || hour < 6;
+  };
+
+  const currentPopularPlaces = isNight() ? POPULAR_PLACES_NIGHT : POPULAR_PLACES_DAY;
+
   return (
     <div className="space-y-3 group">
       {!forceOpen && !hideTrigger && (
@@ -297,7 +334,7 @@ export default function AddressSearch({
                     </button>
                   </div>
 
-                  {/* Recent Places */}
+                  {/* 1. Recent Places */}
                   {recentPlaces.length > 0 && (
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 px-2">
@@ -325,7 +362,63 @@ export default function AddressSearch({
                     </div>
                   )}
 
-                  {/* Roxou Events Promo */}
+                  {/* 2. Roxou Events */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 px-2">
+                      <Zap className="w-4 h-4 text-roxou-primary" />
+                      <p className="text-[10px] text-roxou-text-muted uppercase font-black tracking-[0.2em]">Eventos Roxou</p>
+                    </div>
+                    <div className="space-y-2">
+                      {ROXOU_EVENTS.map((event) => (
+                        <button
+                          key={event.name}
+                          onClick={() => handleQuickSelect(event)}
+                          className="w-full flex items-center gap-4 p-4 rounded-[32px] bg-gradient-to-r from-roxou-primary/5 to-transparent border border-roxou-primary/10 hover:border-roxou-primary/30 transition-all text-left group"
+                        >
+                          <div className="w-10 h-10 rounded-2xl bg-roxou-primary/20 border border-roxou-primary/30 flex items-center justify-center flex-shrink-0 group-hover:bg-roxou-primary/30 transition-colors">
+                            <event.icon className="w-4 h-4 text-roxou-primary fill-current" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-white truncate">{event.name}</p>
+                              <span className="text-[8px] font-black bg-roxou-primary text-white px-1.5 py-0.5 rounded-full uppercase tracking-widest">Sugestão</span>
+                            </div>
+                            <p className="text-[10px] text-roxou-primary/60 font-bold uppercase tracking-widest">Evento Oficial</p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-roxou-primary/20 group-hover:text-roxou-primary transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. Popular Local Places (Time-based) */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 px-2">
+                      <Star className="w-4 h-4 text-roxou-primary" />
+                      <p className="text-[10px] text-roxou-text-muted uppercase font-black tracking-[0.2em]">
+                        {isNight() ? "Destaques da Noite" : "Destaques do Dia"}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {currentPopularPlaces.map((place) => (
+                        <button
+                          key={place.name}
+                          onClick={() => handleQuickSelect(place)}
+                          className="flex items-center gap-4 p-4 rounded-3xl bg-roxou-surface/30 border border-roxou-border hover:border-roxou-primary/30 transition-all text-left group"
+                        >
+                          <div className="w-10 h-10 rounded-2xl bg-roxou-primary/10 border border-roxou-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-roxou-primary/20 transition-colors">
+                            <place.icon className="w-4 h-4 text-roxou-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-white text-sm truncate">{place.name}</p>
+                            <p className="text-[9px] text-roxou-text-muted font-bold uppercase tracking-widest">Sugestão</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Roxou Events Promo Card */}
                   <div className="p-6 rounded-[32px] bg-gradient-to-br from-roxou-primary/20 to-roxou-secondary/10 border border-roxou-primary/30 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform">
                       <Zap className="w-12 h-12 text-roxou-primary fill-current" />
@@ -337,31 +430,6 @@ export default function AddressSearch({
                       </div>
                       <h4 className="text-lg font-black text-white leading-tight">Vai para algum evento?</h4>
                       <p className="text-xs text-roxou-text-muted leading-relaxed">Confira os eventos oficiais da Roxou e garanta seu transporte com desconto exclusivo.</p>
-                      <button className="w-full py-3 rounded-2xl bg-roxou-primary text-white font-black uppercase tracking-widest text-[10px] hover:bg-roxou-primary/80 transition-colors">
-                        Ver Eventos
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Suggested Local Places */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 px-2">
-                      <Star className="w-4 h-4 text-roxou-primary" />
-                      <p className="text-[10px] text-roxou-text-muted uppercase font-black tracking-[0.2em]">Sugestões Locais</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {SUGGESTED_PLACES.map((place) => (
-                        <button
-                          key={place.name}
-                          onClick={() => handleQuickSelect(place)}
-                          className="flex items-center gap-4 p-4 rounded-3xl bg-roxou-surface/30 border border-roxou-border hover:border-roxou-primary/30 transition-all text-left group"
-                        >
-                          <div className="w-10 h-10 rounded-2xl bg-roxou-primary/10 border border-roxou-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-roxou-primary/20 transition-colors">
-                            <MapPin className="w-4 h-4 text-roxou-primary" />
-                          </div>
-                          <span className="font-bold text-white text-sm">{place.name}</span>
-                        </button>
-                      ))}
                     </div>
                   </div>
                 </>

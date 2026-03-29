@@ -25,10 +25,17 @@ export async function middleware(request: NextRequest) {
     .single();
 
   if (!profile) {
-    // This shouldn't happen if triggers are set up, but handle it
-    if (path !== "/login") {
-      return NextResponse.redirect(new URL("/login", request.url));
+    // This shouldn't happen if triggers are set up, but handle it gracefully
+    // Instead of redirecting to login, we allow the request to proceed
+    // The client-side AuthProvider will handle the profile creation/fallback
+    console.warn("MIDDLEWARE: Profile not found for user", user.id);
+    
+    // If it's a protected route, we can allow it if we assume a default role
+    // or we can redirect to a safe landing page like /dashboard
+    if (path.startsWith("/admin") || path.startsWith("/driver")) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
+    
     return supabaseResponse;
   }
 

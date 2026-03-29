@@ -9,19 +9,25 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
+    console.log("AUTH CALLBACK: Exchanging code for session...");
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+    
     if (!error) {
+      console.log("AUTH CALLBACK: Session established successfully.");
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === "development";
       if (isLocalEnv) {
-        // we can be sure that there is no proxy
         return NextResponse.redirect(`${origin}${next}`);
       } else if (forwardedHost) {
         return NextResponse.redirect(`https://${forwardedHost}${next}`);
       } else {
         return NextResponse.redirect(`${origin}${next}`);
       }
+    } else {
+      console.error("AUTH CALLBACK ERROR: Failed to exchange code for session:", error.message);
     }
+  } else {
+    console.warn("AUTH CALLBACK: No code provided in URL.");
   }
 
   // return the user to an error page with instructions
