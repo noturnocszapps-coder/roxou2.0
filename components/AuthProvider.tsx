@@ -101,16 +101,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log("AUTH BOOT START");
       
-      if (session?.user) {
-        console.log("AUTH: Sessão carregada para", session.user.email);
-        setUser(session.user);
-        const p = await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
-        setProfile(p);
+      // Defensive timeout to prevent infinite loading
+      const bootTimeout = setTimeout(() => {
+        if (loading) {
+          console.warn("AUTH BOOT: Timeout reached, forcing loading false");
+          setLoading(false);
+        }
+      }, 8000);
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("SESSION RESULT:", session ? "Session found" : "No session");
+        
+        if (session?.user) {
+          setUser(session.user);
+          const p = await fetchProfile(session.user.id, session.user.email!, session.user.user_metadata);
+          console.log("PROFILE FETCH RESULT:", p ? "Profile found" : "Profile missing");
+          setProfile(p);
+        }
+      } catch (err) {
+        console.error("AUTH BOOT ERROR:", err);
+      } finally {
+        clearTimeout(bootTimeout);
+        console.log("LOADING FALSE");
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     initializeAuth();

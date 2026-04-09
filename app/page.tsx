@@ -26,6 +26,7 @@ const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), {
 });
 
 import AddressSearch from "@/components/AddressSearch";
+import { useAuth } from "@/components/AuthProvider";
 
 const SUGGESTED_PLACES = [
   { name: "Parque do Povo", lat: -22.1225, lng: -51.4032 },
@@ -36,31 +37,45 @@ const SUGGESTED_PLACES = [
 
 export default function HomePage() {
   const router = useRouter();
-  const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const [userLocation, setUserLocation] = useState<[number, number]>([-22.1225, -51.3852]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
-    checkAuth();
+    console.log("HOME: Booting...");
+    
+    // Safety timeout to prevent infinite loading on home page
+    const timeout = setTimeout(() => {
+      if (localLoading) {
+        console.warn("HOME: Boot timeout reached, forcing loading false");
+        setLocalLoading(false);
+      }
+    }, 5000);
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          console.log("HOME: Geolocation success");
           setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+          setLocalLoading(false);
+          clearTimeout(timeout);
         },
         () => {
+          console.warn("HOME: Geolocation failed");
           setUserLocation([-22.1225, -51.3852]);
-        }
+          setLocalLoading(false);
+          clearTimeout(timeout);
+        },
+        { timeout: 3000 } // Don't wait forever for geolocation
       );
+    } else {
+      setLocalLoading(false);
+      clearTimeout(timeout);
     }
-  }, [supabase]);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleDestinationSelect = (name: string, coords?: { lat: number, lng: number }) => {
     if (coords) {
@@ -75,7 +90,8 @@ export default function HomePage() {
     }
   };
 
-  if (loading) {
+  // Show loading if either auth is loading or local boot tasks (like geolocation) are loading
+  if (authLoading || localLoading) {
     return (
       <div className="min-h-screen bg-roxou-bg flex flex-col items-center justify-center gap-4">
         <Zap className="w-12 h-12 text-roxou-primary animate-pulse" />
